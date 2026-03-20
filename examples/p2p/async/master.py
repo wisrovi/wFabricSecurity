@@ -1,0 +1,80 @@
+"""
+Master - Envía datos sensibles P2P (Async)
+"""
+
+import httpx
+import hashlib
+import json
+from wFabricSecurity import FabricSecurity
+
+SLAVE_URL = "http://127.0.0.1:8022/process"
+
+security = FabricSecurity(
+    me="MASTER_P2P_ASYNC",
+    use_mock=True,
+)
+
+PAYLOAD_SENSITIVE = {
+    "data_type": "credenciales_sistema_async",
+    "credentials": {
+        "username": "admin_async",
+        "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCO",
+        "api_key": "sk-async-abcdef123456",
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    },
+    "metadata": {
+        "origin": "master_async_01",
+        "destination": "slave_secure_async",
+        "encryption": "AES-256-GCM",
+    },
+}
+
+
+@security.master_audit(task_prefix="P2P_ASYNC", trusted_slaves=["SLAVE_ASYNC"])
+async def enviar_datos_privados(payload, task_id, hash_a, sig, my_id):
+    print(f"\n[MASTER] Task ID: {task_id}")
+    print(f"[MASTER] Hash público (ledger): {hash_a}")
+    print(f"[MASTER] Datos sensibles (solo P2P):")
+
+    for key, value in payload.items():
+        if key in ["credentials", "password", "token", "api_key"]:
+            print(f"[MASTER]   {key}: ***OCULTO***")
+        else:
+            print(f"[MASTER]   {key}: {value}")
+
+    data = {
+        "task_id": task_id,
+        "hash_a": hash_a,
+        "signature": sig,
+        "signer_id": my_id,
+        "sensitive_data": payload,
+    }
+
+    print(f"\n[MASTER] Enviando a: {SLAVE_URL}")
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(SLAVE_URL, json=data, timeout=30.0)
+        response.raise_for_status()
+
+    result = response.json()
+    print(f"\n[MASTER] Respuesta: {result['result']}")
+
+    return result
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    print("=" * 50)
+    print("  MASTER P2P - Modo Async")
+    print("=" * 50)
+    print("\nNota: Los datos sensibles van por P2P,")
+    print("      solo el hash se registra en el ledger.\n")
+
+    try:
+        resultado = asyncio.run(enviar_datos_privados(PAYLOAD_SENSITIVE))
+        print(f"\n[MASTER] ✓ Transacción P2P completada")
+    except httpx.ConnectError:
+        print("\n[MASTER] ✗ Error: Slave no disponible en puerto 8022")
+    except Exception as e:
+        print(f"\n[MASTER] ✗ Error: {e}")

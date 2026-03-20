@@ -1,3 +1,21 @@
 loguru
 tomli
 setuptools
+
+# --- Hyperledger Fabric SDK ---
+# Esta es la librería principal para interactuar con el Gateway y el Peer
+fabric-sdk-py==0.9.0
+fabric-gateway-python==1.0.1
+
+
+
+# --- Seguridad y Criptografía ---
+# Necesario para el manejo de certificados X.509 y firmas ECDSA
+cryptography==42.0.2
+pyOpenSSL==24.0.0
+ecdsa==0.18.0
+
+# --- Procesamiento de Datos ---
+# Para el manejo de JSON y Hashes en los decoradores
+python-dotenv==1.0.1
+pydantic==2.6.1
