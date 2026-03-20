@@ -185,6 +185,35 @@ make test-data    # Tests de Data
 make test-all
 ```
 
+## Reportes de Tests
+
+Genera reportes profesionales en HTML con fecha, estadísticas y detalle de resultados.
+
+### Generar reporte HTML:
+```bash
+make report
+# o
+python test/test_report.py --format html
+```
+
+### Ver último reporte:
+```bash
+make view-report
+```
+
+### Ubicación de reportes:
+```
+examples/test/reports/
+└── test_report_YYYYMMDD_HHMMSS.html
+```
+
+El reporte incluye:
+- 📅 Fecha y hora de ejecución
+- 📊 Resumen con estadísticas (pasados, fallidos, omitidos)
+- 📈 Gráfico de distribución de resultados
+- 📋 Detalle de cada test con errores si existen
+- 🎨 Diseño profesional responsive
+
 ## Configuración
 
 ### Variables de entorno:

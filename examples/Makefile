@@ -1,4 +1,4 @@
-.PHONY: help test test-core test-json test-image test-p2p test-data test-all test-v test-fabric install clean
+.PHONY: help test test-core test-json test-image test-p2p test-data test-all test-v test-fabric test-report install clean
 
 help:
 	@echo "wFabricSecurity Examples - Comandos disponibles"
@@ -6,14 +6,19 @@ help:
 	@echo "Uso: make [comando]"
 	@echo ""
 	@echo "Tests:"
-	@echo "  test          - Ejecutar todos los tests (sin integration)"
-	@echo "  test-core     - Tests de la librería core"
-	@echo "  test-json     - Tests de ejemplos JSON"
-	@echo "  test-image    - Tests de ejemplos Image"
-	@echo "  test-p2p      - Tests de ejemplos P2P"
-	@echo "  test-data     - Tests de ejemplos Data"
-	@echo "  test-all      - Tests completos incluyendo integration"
-	@echo "  test-v        - Tests con output verbose"
+	@echo "  test           - Ejecutar tests core (sin integration)"
+	@echo "  test-core      - Tests de la librería core"
+	@echo "  test-json      - Tests de ejemplos JSON"
+	@echo "  test-image     - Tests de ejemplos Image"
+	@echo "  test-p2p       - Tests de ejemplos P2P"
+	@echo "  test-data      - Tests de ejemplos Data"
+	@echo "  test-all       - Tests completos incluyendo integration"
+	@echo "  test-v         - Tests con output verbose"
+	@echo "  test-report    - Tests con reporte HTML profesional"
+	@echo ""
+	@echo "Reportes:"
+	@echo "  report         - Generar reporte HTML de tests"
+	@echo "  view-report    - Ver ultimo reporte HTML generado"
 	@echo ""
 	@echo "Ejemplos (requiere Docker de Fabric corriendo):"
 	@echo "  run-json-base      - Ejecutar ejemplo JSON base"
@@ -31,6 +36,7 @@ help:
 
 install:
 	pip install -r requirements.txt
+	pip install pytest-html pytest-json-report -q
 
 test: install
 	@echo "Ejecutando tests..."
@@ -67,6 +73,23 @@ test-v: install
 test-fabric:
 	@echo "Verificando estado de Fabric..."
 	@cd ../enviroment && docker ps --filter "name=peer0\|orderer\|cli" --format "table {{.Names}}\t{{.Status}}" || echo "Contenedores no encontrados"
+
+test-report: install
+	@echo "Ejecutando tests con reporte profesional..."
+	python test/test_report.py --format html
+
+report: install
+	@echo "Generando reporte HTML profesional..."
+	python test/test_report.py --format html
+
+view-report:
+	@LATEST=$$(ls -t test/reports/*.html 2>/dev/null | head -1); \
+	if [ -n "$$LATEST" ]; then \
+		echo "Abriendo reporte: $$LATEST"; \
+		python -c "import webbrowser; webbrowser.open('file://$(shell pwd)/$$LATEST')" 2>/dev/null || echo "Abre el archivo manualmente: $$LATEST"; \
+	else \
+		echo "No se encontró ningún reporte. Ejecuta 'make report' primero."; \
+	fi
 
 run-json-base:
 	@echo "Ejecutando JSON Base - inicia slave en otra terminal:"

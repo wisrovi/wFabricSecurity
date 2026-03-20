@@ -4,3 +4,5 @@ requests
 httpx
 pillow
 pytest
+pytest-html
+pytest-json-report
