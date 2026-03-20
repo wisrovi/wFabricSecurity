@@ -205,47 +205,97 @@ wFabricSecurity/
 
 ## Uso de la Librería
 
-### Uso Básico (Síncrono)
+### Sistema Zero Trust
 
-```python
-from fabric_security import FabricSecurity
+La librería implementa un sistema completo de seguridad Zero Trust:
 
-# Crear instancia
-security = FabricSecurity(
-    peer_endpoint="peer0.org1.net:7051",
-    identity_path="/path/to/msp",
-    gateway_url="peer0.org1.net:7051"
-)
-
-# Registrar una tarea
-task_id = "task-001"
-hash_a = security.hash_data({"task": "data"})
-sig = security.sign(task_id, hash_a)
-
-# Almacenar en Fabric
-security.store_task(task_id, hash_a, sig)
-
-# Recuperar
-task = security.get_task(task_id)
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    VALIDACIONES DE SEGURIDAD                            │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  1. ¿El CÓDIGO del remitente es íntegro?                              │
+│     → Verifica code_hash contra Fabric                                   │
+│                                                                         │
+│  2. ¿El REMITENTE tiene PERMISO de hablar con el DESTINATARIO?          │
+│     → Verifica tabla de permisos                                        │
+│                                                                         │
+│  3. ¿La FIRMA del mensaje es válida?                                    │
+│     → Verifica ECDSA con certificado del remitente                      │
+│                                                                         │
+│  4. ¿El MENSAJE no fue ALTERADO?                                        │
+│     → Verifica hash SHA-256 del contenido                               │
+│                                                                         │
+│  5. ¿El CÓDIGO del destinatario es íntegro?                            │
+│     → Auto-verificación antes de procesar                               │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Uso Async
+### Uso Básico con FabricSecuritySimple
+
+Para casos simples, usa `FabricSecuritySimple`:
 
 ```python
-import asyncio
-from fabric_security import FabricSecurity
+from wFabricSecurity import FabricSecuritySimple
 
-async def main():
-    security = FabricSecurity(
-        peer_endpoint="peer0.org1.net:7051",
-        identity_path="/path/to/msp",
-        gateway_url="peer0.org1.net:7051"
-    )
-    
-    hash_a = await security.hash_data_async({"task": "data"})
-    result = await security.store_task_async(task_id, hash_a, signature)
-    
-asyncio.run(main())
+security = FabricSecuritySimple(
+    me="MiIdentidad",
+    msp_path="/path/to/msp"
+)
+
+# Registrar identidad
+security.register_identity()
+
+# Registrar código
+security.register_code(["mi_script.py"], "1.0.0")
+
+# Verificar integridad
+security.verify_code()
+```
+
+### Uso Avanzado con FabricSecurity (Zero Trust)
+
+Para máxima seguridad, usa `FabricSecurity`:
+
+```python
+from wFabricSecurity import FabricSecurity
+
+security = FabricSecurity(
+    me="Master",
+    msp_path="/path/to/msp"
+)
+
+# Registrar identidad y código
+security.register_identity()
+security.register_code(["master.py"], "1.0.0")
+
+# Registrar permisos de comunicación
+security.register_communication("CN=Master", "CN=Slave")
+
+# Crear mensaje firmado
+message = security.create_message(
+    recipient="CN=Slave",
+    content='{"data": "importante"}'
+)
+
+# Verificar mensaje recibido
+if security.verify_message(message):
+    print("Mensaje válido")
+```
+
+### Decoradores Master-Slave
+
+```python
+# MASTER - Envía tareas auditadas
+@security.master_audit(task_prefix="TASK", trusted_slaves=["CN=Slave"])
+def enviar_tarea(payload, task_id, hash_a, sig, my_id):
+    return enviar_a_slave(payload)
+
+# SLAVE - Procesa tareas con verificación
+@security.slave_verify(trusted_masters=["CN=Master"])
+def procesar_tarea(payload):
+    return procesar(payload)
 ```
 
 ## Code Signing (Firma de Código)

@@ -234,13 +234,13 @@ class TestCodeIntegrity:
 
 
 class TestMasterAuditDecorator:
-    """Tests for master_audit decorator."""
+    """Tests for master_audit decorator using FabricSecuritySimple."""
 
     def test_master_audit_sync(self):
         """Test sync master_audit decorator."""
-        from wFabricSecurity import FabricSecurity
+        from wFabricSecurity import FabricSecuritySimple
 
-        security = FabricSecurity(me="TestUser", msp_path=FABRIC_MSP_PATH)
+        security = FabricSecuritySimple(me="TestUser", msp_path=FABRIC_MSP_PATH)
 
         @security.master_audit(task_prefix="TEST", trusted_slaves=["SLAVE_TEST"])
         def test_func(payload, task_id, hash_a, sig, my_id):
@@ -254,10 +254,10 @@ class TestMasterAuditDecorator:
 
     def test_master_audit_async(self):
         """Test async master_audit decorator."""
-        from wFabricSecurity import FabricSecurity
+        from wFabricSecurity import FabricSecuritySimple
         import asyncio
 
-        security = FabricSecurity(me="TestUser", msp_path=FABRIC_MSP_PATH)
+        security = FabricSecuritySimple(me="TestUser", msp_path=FABRIC_MSP_PATH)
 
         @security.master_audit(task_prefix="TEST_ASYNC", trusted_slaves=["SLAVE_TEST"])
         async def test_func_async(payload, task_id, hash_a, sig, my_id):
@@ -271,13 +271,13 @@ class TestMasterAuditDecorator:
 
 
 class TestSlaveVerifyDecorator:
-    """Tests for slave_verify decorator."""
+    """Tests for slave_verify decorator using FabricSecuritySimple."""
 
     def test_slave_verify_sync(self):
         """Test sync slave_verify decorator."""
-        from wFabricSecurity import FabricSecurity
+        from wFabricSecurity import FabricSecuritySimple
 
-        security = FabricSecurity(me="TestUser", msp_path=FABRIC_MSP_PATH)
+        security = FabricSecuritySimple(me="TestUser", msp_path=FABRIC_MSP_PATH)
 
         @security.slave_verify(trusted_masters=["MASTER_TEST"])
         def test_process(payload):
@@ -301,10 +301,10 @@ class TestSlaveVerifyDecorator:
 
     def test_slave_verify_async(self):
         """Test async slave_verify decorator."""
-        from wFabricSecurity import FabricSecurity
+        from wFabricSecurity import FabricSecuritySimple
         import asyncio
 
-        security = FabricSecurity(me="TestUser", msp_path=FABRIC_MSP_PATH)
+        security = FabricSecuritySimple(me="TestUser", msp_path=FABRIC_MSP_PATH)
 
         @security.slave_verify(trusted_masters=["MASTER_TEST"])
         async def test_process_async(payload):
