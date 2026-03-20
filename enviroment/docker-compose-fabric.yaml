@@ -40,6 +40,7 @@ services:
   peer0.org1.net:
     image: hyperledger/fabric-peer:2.5
     container_name: peer0.org1.net
+    hostname: peer0.org1.net
     environment:
       - CORE_PEER_ID=peer0.org1.net
       - CORE_PEER_ADDRESS=peer0.org1.net:7051
@@ -57,7 +58,8 @@ services:
       - CORE_TLS_ENABLED=false
       - FABRIC_CFG_PATH=/etc/hyperledger/fabric
       - GODEBUG=netdns=go
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabric
+    extra_hosts:
+      - "peer0.org1.net:172.18.0.4"
     working_dir: /root
     command: peer node start
     volumes:
