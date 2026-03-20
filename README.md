@@ -208,6 +208,34 @@ python slave.py
 python master.py
 ```
 
+### Ejemplos con Fabric Real
+
+Los ejemplos en `examples/fabric/` usan Hyperledger Fabric real en lugar de mock:
+
+```bash
+# 1. Asegúrate de que la red Fabric esté corriendo
+cd enviroment
+make network
+make install-chaincode
+# Nota: make instantiate-chaincode puede requerir configuración adicional
+
+# 2. Configurar variables de entorno
+export FABRIC_PEER_URL=peer0.org1.net:7051
+export FABRIC_MSP_PATH=$(pwd)/organizations/peerOrganizations/org1.net/users/Admin@org1.net/msp
+
+# 3. Terminal 1 - Slave (puerto 8002)
+cd examples/fabric/json
+python slave.py
+
+# 4. Terminal 2 - Master
+cd examples/fabric/json
+python master.py
+```
+
+**Diferencia entre mock y real:**
+- **Mock**: Los datos se almacenan en memoria (se pierden al reiniciar)
+- **Real**: Los datos se registran en Hyperledger Fabric (permanentes e inmutables)
+
 ## Comandos del Entorno (carpeta enviroment)
 
 ```bash
@@ -295,18 +323,17 @@ python examples/json/base/slave.py     # ✓ Funciona
 
 ### Red Fabric Real (Avanzado)
 
-La red Docker está configurada y corriendo, pero la instanciación del chaincode tiene un problema de políticas de canal que requiere investigación adicional.
+La red Docker se configura con `cd enviroment && make network`, pero el chaincode requiere configuración adicional.
 
 **Estado actual:**
-- ✓ Red Docker corriendo (orderer, peer, couchdb, cli)
-- ✓ Canal "mychannel" creado y peer unido
-- ✓ Chaincode instalado (pero no instanciado)
-- ⚠ Instanciación pendiente por fix de políticas
+- ✓ Red Docker configurable (orderer, peer, couchdb, cli)
+- ✓ Canal y chaincode definiables
+- ⚠ Instanciación puede requerir ajustes según el entorno
 
-**Para usar con Fabric real, se necesita:**
-1. Solucionar el issue de políticas del canal
-2. Instanciar el chaincode con `make instantiate-chaincode`
-3. Modificar ejemplos para usar `use_mock=False`
+**Para usar con Fabric real:**
+1. Levantar red: `cd enviroment && make network`
+2. Instalar chaincode: `make install-chaincode`
+3. Usar ejemplos en `examples/fabric/` con `FABRIC_PEER_URL` y `FABRIC_MSP_PATH`
 
 ## Troubleshooting
 

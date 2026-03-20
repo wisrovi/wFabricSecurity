@@ -125,20 +125,20 @@ Application: &ApplicationDefaults
   Organizations:
   Policies:
     Readers:
-      Type: ImplicitMeta
-      Rule: "ANY Readers"
+      Type: Signature
+      Rule: "OR('Org1MSP.member')"
     Writers:
-      Type: ImplicitMeta
-      Rule: "ANY Writers"
+      Type: Signature
+      Rule: "OR('Org1MSP.member')"
     Admins:
-      Type: ImplicitMeta
-      Rule: "MAJORITY Admins"
+      Type: Signature
+      Rule: "OR('Org1MSP.admin')"
     LifecycleEndorsement:
-      Type: ImplicitMeta
-      Rule: "MAJORITY Endorsement"
+      Type: Signature
+      Rule: "OR('Org1MSP.member')"
     Endorsement:
-      Type: ImplicitMeta
-      Rule: "MAJORITY Endorsement"
+      Type: Signature
+      Rule: "OR('Org1MSP.member')"
   Capabilities:
     <<: *ApplicationCapabilities
 
@@ -153,29 +153,29 @@ Orderer: &OrdererDefaults
   Organizations:
   Policies:
     Readers:
-      Type: ImplicitMeta
-      Rule: "ANY Readers"
+      Type: Signature
+      Rule: "OR('OrdererMSP.member')"
     Writers:
-      Type: ImplicitMeta
-      Rule: "ANY Writers"
+      Type: Signature
+      Rule: "OR('OrdererMSP.member')"
     Admins:
-      Type: ImplicitMeta
-      Rule: "MAJORITY Admins"
+      Type: Signature
+      Rule: "OR('OrdererMSP.admin')"
     BlockValidation:
-      Type: ImplicitMeta
-      Rule: "ANY Writers"
+      Type: Signature
+      Rule: "OR('OrdererMSP.member')"
 
 Channel: &ChannelDefaults
   Policies:
     Readers:
-      Type: ImplicitMeta
-      Rule: "ANY Readers"
+      Type: Signature
+      Rule: "OR('Org1MSP.member')"
     Writers:
-      Type: ImplicitMeta
-      Rule: "ANY Writers"
+      Type: Signature
+      Rule: "OR('Org1MSP.member')"
     Admins:
-      Type: ImplicitMeta
-      Rule: "MAJORITY Admins"
+      Type: Signature
+      Rule: "OR('Org1MSP.admin')"
   Capabilities:
     <<: *ChannelCapabilities
 
