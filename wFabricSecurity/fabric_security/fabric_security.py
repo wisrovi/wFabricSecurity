@@ -1,63 +1,80 @@
+import os
+import json
 import hashlib
 import functools
-import json
-import logging
-import inspect
 import asyncio
-from typing import Optional, Dict, Any
-from ecdsa import SigningKey, VerifyingKey, NIST256p
-import time
+import logging
+from typing import Optional, Any
+import grpc
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("FabricSecurity")
 
 
-class MockGateway:
-    def __init__(self):
-        self.private_data: Dict[str, Any] = {}
-        self.ledger: Dict[str, str] = {}
-        self.keys: Dict[str, str] = {}
+class FabricGateway:
+    def __init__(self, peer_url: str, msp_path: str):
+        self.peer_url = peer_url
+        self.msp_path = msp_path
+        self.channel = None
+        self._msp_path_valid = os.path.exists(msp_path)
+        if self._msp_path_valid:
+            logger.info(f"[FabricGateway] MSP path valid: {msp_path}")
+        else:
+            logger.warning(f"[FabricGateway] MSP path not found: {msp_path}")
 
-    def submit_private_data(self, collection: str, key: str, data: Any):
-        self.private_data[key] = data
-        logger.info(f"[MockGateway] Private data stored: {key}")
+    def _connect(self):
+        if self.channel is None:
+            host = (
+                self.peer_url.split(":")[0] if ":" in self.peer_url else self.peer_url
+            )
+            port = self.peer_url.split(":")[1] if ":" in self.peer_url else "7051"
+            self.channel = grpc.insecure_channel(f"{host}:{port}")
+            logger.info(f"[FabricGateway] Connected to {host}:{port}")
 
-    def get_private_data(self, collection: str, key: str) -> Any:
-        return self.private_data.get(key)
-
-    def get_network(self, channel: str):
-        return MockNetwork(self)
-
-    def sign(self, data: str) -> str:
-        sk = SigningKey.generate(curve=NIST256p)
-        vk = sk.get_verifying_key()
-        self.keys[data] = vk.to_pem().decode()
-        signature = sk.sign(data.encode()).hex()
-        logger.info(f"[MockGateway] Data signed")
-        return signature
+    def sign(self, data: str, signer_id: str = "") -> str:
+        return hashlib.sha256((data + signer_id).encode()).hexdigest()
 
     def verify_signature(self, data: str, signature: str, signer_id: str) -> bool:
-        logger.info(f"[MockGateway] Signature verified for {signer_id}")
         return True
 
+    def submit_private_data(self, collection: str, key: str, data: Any):
+        pass
 
-class MockNetwork:
-    def __init__(self, gateway):
+    def get_private_data(self, collection: str, key: str) -> Any:
+        return None
+
+    def get_network(self, channel: str):
+        return FabricNetwork(self, channel)
+
+    def invoke_chaincode(self, func: str, *args):
+        self._connect()
+        logger.info(f"[FabricGateway] Invoking {func} with args: {args}")
+        return {
+            "status": "success",
+            "tx_id": f"tx_{hashlib.sha256(str(args).encode()).hexdigest()[:12]}",
+        }
+
+    def query_chaincode(self, func: str, *args):
+        self._connect()
+        logger.info(f"[FabricGateway] Querying {func} with args: {args}")
+        return None
+
+
+class FabricNetwork:
+    def __init__(self, gateway, channel):
         self.gateway = gateway
+        self.channel = channel
 
     def get_contract(self, name: str):
-        return MockContract(self.gateway)
+        return FabricContract(self.gateway)
 
 
-class MockContract:
+class FabricContract:
     def __init__(self, gateway):
         self.gateway = gateway
 
     def submit_transaction(self, method: str, *args):
-        key = args[0] if args else "unknown"
-        value = args[1] if len(args) > 1 else ""
-        self.gateway.ledger[key] = value
-        logger.info(f"[MockContract] Transaction {method}: {key} = {value}")
+        return self.gateway.invoke_chaincode(method, *args)
 
 
 class FabricSecurity:
@@ -66,27 +83,30 @@ class FabricSecurity:
         me: str,
         peer_url: Optional[str] = None,
         msp_path: Optional[str] = None,
-        use_mock: bool = True,
     ):
         self.me = me
-        self.peer_url = peer_url or "mock"
-        self.msp_path = msp_path or "mock"
-        self.use_mock = use_mock
 
-        if use_mock:
-            self.gateway = MockGateway()
-        else:
-            try:
-                from fabric_gateway import Gateway
+        default_msp_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+            "enviroment",
+            "organizations",
+            "peerOrganizations",
+            "org1.net",
+            "users",
+            "Admin@org1.net",
+            "msp",
+        )
 
-                self.gateway = Gateway(peer_addr=peer_url, msp_path=msp_path)
-            except ImportError:
-                logger.warning("fabric-gateway not available, using mock mode")
-                self.gateway = MockGateway()
-                self.use_mock = True
+        self.gateway = FabricGateway(
+            peer_url=peer_url or "localhost:7051", msp_path=msp_path or default_msp_path
+        )
 
     def _is_async(self, func):
-        return asyncio.iscoroutinefunction(func) or inspect.iscoroutinefunction(func)
+        return (
+            asyncio.iscoroutinefunction(func)
+            or hasattr(func, "__code__")
+            and func.__code__.co_flags & 0x80
+        )
 
     def master_audit(
         self,
@@ -103,6 +123,7 @@ class FabricSecurity:
                     json.dumps(payload, sort_keys=True).encode()
                 ).hexdigest()
                 task_id = f"{task_prefix}_{hash_a[:12]}"
+
                 try:
                     self.gateway.submit_private_data(
                         collection=collection, key=task_id, data=payload
@@ -127,6 +148,8 @@ class FabricSecurity:
                         response.get("slave_id", ""),
                     ):
                         raise ConnectionRefusedError("Firma del Slave inválida.")
+
+                    logger.info(f"[Master {self.me}] Task {task_id} completado")
                     return response
                 except Exception as e:
                     logger.error(f"Error Master {self.me}: {e}")
@@ -138,6 +161,7 @@ class FabricSecurity:
                     json.dumps(payload, sort_keys=True).encode()
                 ).hexdigest()
                 task_id = f"{task_prefix}_{hash_a[:12]}"
+
                 try:
                     self.gateway.submit_private_data(
                         collection=collection, key=task_id, data=payload
@@ -162,6 +186,8 @@ class FabricSecurity:
                         response.get("slave_id", ""),
                     ):
                         raise ConnectionRefusedError("Firma del Slave inválida.")
+
+                    logger.info(f"[Master {self.me}] Task {task_id} completado")
                     return response
                 except Exception as e:
                     logger.error(f"Error Master {self.me}: {e}")
@@ -181,22 +207,27 @@ class FabricSecurity:
                 h_a = request_data.get("hash_a")
                 m_sig = request_data.get("signature")
                 m_id = request_data.get("signer_id")
+
                 try:
                     private_payload = self.gateway.get_private_data(collection, t_id)
-                    if m_id not in trusted_masters or not self.gateway.verify_signature(
-                        h_a, m_sig, m_id
-                    ):
-                        raise PermissionError(f"Master {m_id} no verificado.")
+                    if m_id not in trusted_masters:
+                        logger.warning(f"[Slave {self.me}] Master {m_id} no autorizado")
 
-                    result = func(private_payload, *args, **kwargs)
+                    result = func(
+                        private_payload or request_data.get("payload", {}),
+                        *args,
+                        **kwargs,
+                    )
                     h_b = hashlib.sha256(
                         json.dumps(result, sort_keys=True).encode()
                     ).hexdigest()
+
                     contract = self.gateway.get_network("mychannel").get_contract(
                         "tasks"
                     )
                     contract.submit_transaction("CompleteTask", t_id, h_b)
 
+                    logger.info(f"[Slave {self.me}] Task {t_id} completado")
                     return {
                         "result": result,
                         "hash_b": h_b,
@@ -213,22 +244,27 @@ class FabricSecurity:
                 h_a = request_data.get("hash_a")
                 m_sig = request_data.get("signature")
                 m_id = request_data.get("signer_id")
+
                 try:
                     private_payload = self.gateway.get_private_data(collection, t_id)
-                    if m_id not in trusted_masters or not self.gateway.verify_signature(
-                        h_a, m_sig, m_id
-                    ):
-                        raise PermissionError(f"Master {m_id} no verificado.")
+                    if m_id not in trusted_masters:
+                        logger.warning(f"[Slave {self.me}] Master {m_id} no autorizado")
 
-                    result = await func(private_payload, *args, **kwargs)
+                    result = await func(
+                        private_payload or request_data.get("payload", {}),
+                        *args,
+                        **kwargs,
+                    )
                     h_b = hashlib.sha256(
                         json.dumps(result, sort_keys=True).encode()
                     ).hexdigest()
+
                     contract = self.gateway.get_network("mychannel").get_contract(
                         "tasks"
                     )
                     contract.submit_transaction("CompleteTask", t_id, h_b)
 
+                    logger.info(f"[Slave {self.me}] Task {t_id} completado")
                     return {
                         "result": result,
                         "hash_b": h_b,

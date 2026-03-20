@@ -1,85 +1,85 @@
 """
-Master - Envía imagen codificada (Async)
+Master Image Async - Envía imagen para procesamiento usando Hyperledger Fabric Real
 """
 
+import os
+import asyncio
 import httpx
-import base64
 import hashlib
 import json
-import os
+from pathlib import Path
 from wFabricSecurity import FabricSecurity
 
-SLAVE_URL = "http://127.0.0.1:8012/process"
+SLAVE_URL = os.getenv("SLAVE_URL", "http://127.0.0.1:8002/process")
+FABRIC_PEER_URL = os.getenv("FABRIC_PEER_URL", "localhost:7051")
+FABRIC_MSP_PATH = os.getenv(
+    "FABRIC_MSP_PATH",
+    "/home/wisrovi/Documentos/wFabricSecurity/enviroment/organizations/peerOrganizations/org1.net/users/Admin@org1.net/msp",
+)
 
 security = FabricSecurity(
     me="MASTER_IMAGE_ASYNC",
-    use_mock=True,
+    peer_url=FABRIC_PEER_URL,
+    msp_path=FABRIC_MSP_PATH,
 )
 
 
-def create_sample_image():
-    from PIL import Image, ImageDraw, ImageFont
+@security.master_audit(task_prefix="IMAGE_ASYNC", trusted_slaves=["SLAVE_IMAGE_ASYNC"])
+async def enviar_imagen_async(filepath, task_id, hash_a, sig, my_id):
+    print(f"\n[MASTER-IMAGE-ASYNC] Task ID: {task_id}")
+    print(f"[MASTER-IMAGE-ASYNC] Hash A: {hash_a[:16]}...")
+    print(f"[MASTER-IMAGE-ASYNC] Enviando archivo: {filepath}")
 
-    img = Image.new("RGB", (300, 200), color="white")
-    draw = ImageDraw.Draw(img)
-    try:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 20)
-    except:
-        font = ImageFont.load_default()
-    draw.rectangle([20, 20, 280, 180], outline="blue", width=3)
-    draw.text((50, 80), "Test Image", fill="black", font=font)
-    draw.text((50, 110), "wFabricSecurity Async", fill="blue", font=font)
-    img.save("sample_async.png")
-    return "sample_async.png"
+    with open(filepath, "rb") as f:
+        file_data = f.read()
 
+    file_hash = hashlib.sha256(file_data).hexdigest()
+    print(f"[MASTER-IMAGE-ASYNC] File hash: {file_hash[:16]}...")
 
-IMAGE_FILE = create_sample_image()
-
-
-@security.master_audit(task_prefix="IMG_ASYNC", trusted_slaves=["SLAVE_ASYNC"])
-async def enviar_imagen(payload, task_id, hash_a, sig, my_id):
-    print(f"\n[MASTER] Task ID: {task_id}")
-    print(f"[MASTER] Enviando imagen: {payload['image_name']}")
-
+    files = {
+        "file": (Path(filepath).name, file_data, "image/png"),
+    }
     data = {
         "task_id": task_id,
         "hash_a": hash_a,
         "signature": sig,
         "signer_id": my_id,
-        "image_name": payload["image_name"],
-        "image_data": payload["image_data"],
+        "original_hash": file_hash,
     }
 
+    print(f"[MASTER-IMAGE-ASYNC] Enviando a: {SLAVE_URL}")
     async with httpx.AsyncClient() as client:
-        response = await client.post(SLAVE_URL, json=data, timeout=30.0)
+        response = await client.post(SLAVE_URL, files=files, data=data)
         response.raise_for_status()
 
     result = response.json()
-    print(f"\n[MASTER] Resultado: {result['result']}")
+    print(f"\n[MASTER-IMAGE-ASYNC] Respuesta del Slave:")
+    print(f"[MASTER-IMAGE-ASYNC] - Slave ID: {result['slave_id']}")
+    print(f"[MASTER-IMAGE-ASYNC] - Hash B: {result['hash_b'][:16]}...")
 
     return result
 
 
-if __name__ == "__main__":
-    import asyncio
+async def main():
+    print("=" * 60)
+    print("  MASTER IMAGE ASYNC - Hyperledger Fabric Real")
+    print("=" * 60)
+    print(f"\nPeer URL: {FABRIC_PEER_URL}")
+    print(f"Modo: FABRIC REAL (ASYNC)")
+    print(f"Enviando a: {SLAVE_URL}\n")
 
-    print("=" * 50)
-    print("  MASTER IMAGE - Modo Async")
-    print("=" * 50)
-
-    with open(IMAGE_FILE, "rb") as f:
-        image_data = base64.b64encode(f.read()).decode()
-
-    payload = {
-        "image_name": IMAGE_FILE,
-        "image_data": image_data,
-        "size": os.path.getsize(IMAGE_FILE),
-    }
+    image_path = os.path.join(os.path.dirname(__file__), "..", "..", "sample.png")
+    if not os.path.exists(image_path):
+        image_path = "/home/wisrovi/Documentos/wFabricSecurity/sample.png"
 
     try:
-        resultado = asyncio.run(enviar_imagen(payload))
-        print(f"\n[MASTER] ✓ Imagen enviada correctamente")
-    except httpx.ConnectError:
-        print("\n[MASTER] ✗ Error: Slave no disponible en puerto 8012")
+        resultado = await enviar_imagen_async(image_path)
+        print(f"\n[MASTER-IMAGE-ASYNC] ✓ Transacción completada")
+    except FileNotFoundError:
+        print(f"\n[MASTER-IMAGE-ASYNC] ✗ Error: Archivo no encontrado")
     except Exception as e:
-        print(f"\n[MASTER] ✗ Error: {e}")
+        print(f"\n[MASTER-IMAGE-ASYNC] ✗ Error: {e}")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

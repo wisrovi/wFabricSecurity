@@ -1,52 +1,58 @@
 """
-Master - Envía archivo binario (Async)
+Master Data Async - Envía archivo binario usando Hyperledger Fabric Real
 """
 
+import os
+import asyncio
 import httpx
 import base64
 import hashlib
 import json
-import os
 from wFabricSecurity import FabricSecurity
 
-SLAVE_URL = "http://127.0.0.1:8032/process"
+SLAVE_URL = os.getenv("SLAVE_URL", "http://127.0.0.1:8004/process")
+FABRIC_PEER_URL = os.getenv("FABRIC_PEER_URL", "localhost:7051")
+FABRIC_MSP_PATH = os.getenv(
+    "FABRIC_MSP_PATH",
+    "/home/wisrovi/Documentos/wFabricSecurity/enviroment/organizations/peerOrganizations/org1.net/users/Admin@org1.net/msp",
+)
 
 security = FabricSecurity(
     me="MASTER_DATA_ASYNC",
-    use_mock=True,
+    peer_url=FABRIC_PEER_URL,
+    msp_path=FABRIC_MSP_PATH,
 )
 
-SAMPLE_CONTENT = """
+SAMPLE_CONTENT = b"""
 ================================================================================
                     REPORTE DE MANTENIMIENTO #67890 (ASYNC)
 ================================================================================
 Fecha: 2025-03-20
-Técnico: María García
-Ubicación: Planta Industrial Sur
+Tecnico: Maria Garcia
+Ubicacion: Planta Industrial Sur
 
 EQUIPOS INSPECCIONADOS:
-1. Turbina Eólica - Estado: Normal
+1. Turbina Eolica - Estado: Normal
 2. Panel Solar - Estado: Normal
-3. Inversor Grid - Estado: Requiere revisión
+3. Inversor Grid - Estado: Requiere revision
 
 OBSERVACIONES:
 - Limpieza de paneles realizada
-- Revisión de conexiones eléctricas
-- Actualización de firmware
+- Revision de conexiones electricas
+- Actualizacion de firmware
 
 wFabricSecurity - Asset Management (Async)
 ================================================================================
-""".encode("utf-8")
+"""
 
 FILE_NAME = "reporte_mantenimiento_async.txt"
 
 
-@security.master_audit(task_prefix="DATA_ASYNC", trusted_slaves=["SLAVE_ASYNC"])
-async def enviar_archivo(payload, task_id, hash_a, sig, my_id):
-    print(f"\n[MASTER] Task ID: {task_id}")
-    print(f"[MASTER] Enviando archivo: {payload['file_name']}")
-    print(f"[MASTER] Tipo: {payload['file_type']}")
-    print(f"[MASTER] Tamaño: {payload['file_size']} bytes")
+@security.master_audit(task_prefix="DATA_ASYNC", trusted_slaves=["SLAVE_DATA_ASYNC"])
+async def enviar_archivo_async(payload, task_id, hash_a, sig, my_id):
+    print(f"\n[MASTER-DATA-ASYNC] Task ID: {task_id}")
+    print(f"[MASTER-DATA-ASYNC] Hash A: {hash_a[:16]}...")
+    print(f"[MASTER-DATA-ASYNC] Enviando archivo: {payload['file_name']}")
 
     data = {
         "task_id": task_id,
@@ -60,25 +66,28 @@ async def enviar_archivo(payload, task_id, hash_a, sig, my_id):
     }
 
     async with httpx.AsyncClient() as client:
-        response = await client.post(SLAVE_URL, json=data, timeout=30.0)
+        response = await client.post(SLAVE_URL, json=data)
         response.raise_for_status()
 
     result = response.json()
-    print(f"\n[MASTER] Resultado: {result['result']}")
+    print(f"\n[MASTER-DATA-ASYNC] Respuesta del Slave:")
+    print(f"[MASTER-DATA-ASYNC] - Slave ID: {result['slave_id']}")
+    print(f"[MASTER-DATA-ASYNC] - Hash B: {result['hash_b'][:16]}...")
 
     return result
 
 
-if __name__ == "__main__":
-    import asyncio
-
-    print("=" * 50)
-    print("  MASTER DATA - Modo Async")
-    print("=" * 50)
+async def main():
+    print("=" * 60)
+    print("  MASTER DATA ASYNC - Hyperledger Fabric Real")
+    print("=" * 60)
+    print(f"\nPeer URL: {FABRIC_PEER_URL}")
+    print(f"Modo: FABRIC REAL (ASYNC)")
+    print(f"Enviando a: {SLAVE_URL}\n")
 
     with open(FILE_NAME, "wb") as f:
         f.write(SAMPLE_CONTENT)
-    print(f"[MASTER] Archivo de prueba creado: {FILE_NAME}")
+    print(f"[MASTER-DATA-ASYNC] Archivo de prueba creado: {FILE_NAME}")
 
     with open(FILE_NAME, "rb") as f:
         file_data = base64.b64encode(f.read()).decode()
@@ -91,9 +100,11 @@ if __name__ == "__main__":
     }
 
     try:
-        resultado = asyncio.run(enviar_archivo(payload))
-        print(f"\n[MASTER] ✓ Archivo enviado correctamente")
-    except httpx.ConnectError:
-        print("\n[MASTER] ✗ Error: Slave no disponible en puerto 8032")
+        resultado = await enviar_archivo_async(payload)
+        print(f"\n[MASTER-DATA-ASYNC] ✓ Archivo enviado correctamente")
     except Exception as e:
-        print(f"\n[MASTER] ✗ Error: {e}")
+        print(f"\n[MASTER-DATA-ASYNC] ✗ Error: {e}")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

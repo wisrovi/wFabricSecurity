@@ -57,6 +57,7 @@ services:
       - CORE_TLS_ENABLED=false
       - FABRIC_CFG_PATH=/etc/hyperledger/fabric
       - GODEBUG=netdns=go
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabric
     working_dir: /root
     command: peer node start
     volumes:

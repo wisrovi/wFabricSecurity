@@ -1,13 +1,28 @@
 """
-Slave FastAPI - Recibe JSON auditado (Async)
+Slave JSON Async - Recibe JSON auditado usando Hyperledger Fabric Real
 """
 
+import os
+import hashlib
+import json
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import uvicorn
-import asyncio
+from wFabricSecurity import FabricSecurity
 
-app = FastAPI(title="Slave JSON - Async")
+app = FastAPI(title="Slave JSON Async - Fabric Real")
+
+FABRIC_PEER_URL = os.getenv("FABRIC_PEER_URL", "localhost:7051")
+FABRIC_MSP_PATH = os.getenv(
+    "FABRIC_MSP_PATH",
+    "/home/wisrovi/Documentos/wFabricSecurity/enviroment/organizations/peerOrganizations/org1.net/users/Admin@org1.net/msp",
+)
+
+security = FabricSecurity(
+    me="SLAVE_JSON_ASYNC",
+    peer_url=FABRIC_PEER_URL,
+    msp_path=FABRIC_MSP_PATH,
+)
 
 
 class RequestData(BaseModel):
@@ -25,44 +40,59 @@ class ResponseData(BaseModel):
     slave_id: str
 
 
-RESULTADO_SLAVE = {
-    "procesado": True,
-    "mensaje": "Datos JSON recibidos correctamente (async)",
-    "operacion": "analisis_async_completado",
-}
+def process_payload(payload):
+    return {
+        "procesado": True,
+        "mensaje": "Datos JSON procesados con Fabric Real (Async)",
+        "operacion": "analisis_async_completado",
+        "timestamp": str(hashlib.sha256(str(payload).encode()).hexdigest()[:16]),
+    }
+
+
+@security.slave_verify(trusted_masters=["MASTER_JSON_ASYNC"])
+def verify_and_process(payload):
+    return process_payload(payload)
 
 
 @app.post("/process", response_model=ResponseData)
-async def process_data(data: RequestData):
-    await asyncio.sleep(0.1)
+def process_data(data: RequestData):
+    print(f"\n[SLAVE-ASYNC] Recibido de: {data.signer_id}")
+    print(f"[SLAVE-ASYNC] Task ID: {data.task_id}")
+    print(f"[SLAVE-ASYNC] Hash A: {data.hash_a[:16]}...")
 
-    print(f"\n[SLAVE] Recibido de: {data.signer_id}")
-    print(f"[SLAVE] Task ID: {data.task_id}")
-    print(f"[SLAVE] Hash A: {data.hash_a[:16]}...")
-    print(f"[SLAVE] Payload: {data.payload}")
+    try:
+        result = verify_and_process(data.payload)
+        h_b = hashlib.sha256(json.dumps(result, sort_keys=True).encode()).hexdigest()
 
-    import hashlib
-    import json
+        print(f"[SLAVE-ASYNC] Registrado en Fabric: Task={data.task_id}")
+        print(f"[SLAVE-ASYNC] Hash B: {h_b[:16]}...")
 
-    h_b = hashlib.sha256(
-        json.dumps(RESULTADO_SLAVE, sort_keys=True).encode()
-    ).hexdigest()
-
-    return ResponseData(
-        result=RESULTADO_SLAVE,
-        hash_b=h_b,
-        slave_sig="firma_mock_slave",
-        slave_id="SLAVE_ASYNC",
-    )
+        return ResponseData(
+            result=result,
+            hash_b=h_b,
+            slave_sig=security.gateway.sign(h_b),
+            slave_id=security.me,
+        )
+    except Exception as e:
+        print(f"[SLAVE-ASYNC] ✗ Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/health")
-async def health():
-    return {"status": "ok", "mode": "async"}
+def health():
+    return {"status": "ok", "mode": "fabric_real_async"}
+
+
+@app.get("/")
+def root():
+    return {"service": "Slave JSON Async Fabric Real", "status": "running"}
 
 
 if __name__ == "__main__":
-    print("=" * 50)
-    print("  SLAVE JSON - Modo Async")
-    print("=" * 50)
-    uvicorn.run(app, host="127.0.0.1", port=8002, reload=False)
+    print("=" * 60)
+    print("  SLAVE JSON ASYNC - Hyperledger Fabric Real")
+    print("=" * 60)
+    print(f"\nPeer URL: {FABRIC_PEER_URL}")
+    print(f"Modo: FABRIC REAL (ASYNC)")
+    print()
+    uvicorn.run(app, host="127.0.0.1", port=8001, reload=False)

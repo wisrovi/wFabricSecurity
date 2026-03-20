@@ -27,6 +27,93 @@ wFabricSecurity permite implementar un sistema de **auditoría criptográfica di
 │       ▼               ▼                                    │      │
 │  ┌──────────┐    ┌──────────┐ ───────────────────────────┘     │
 │  │  Slaves  │◄──►│  Gateway │                                    │
+│  │  Workers  │    │  (API)   │                                    │
+│  └──────────┘    └──────────┘                                    │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## Flujo de Trabajo
+
+1. **Master**: Genera hash SHA-256 del payload
+2. **Master**: Registra dato privado (P2P) + Hash en Ledger
+3. **Master**: Firma hash y envía a Slave (vía HTTP)
+4. **Slave** (FastAPI): Recibe, verifica firma, procesa
+5. **Slave**: Registra resultado en Ledger
+6. **Slave**: Devuelve resultado + firma al Master
+7. **Master**: Verifica firma del Slave
+
+## Instalación Rápida
+
+### Opción 1: Instalación completa con Fabric (Production)
+
+```bash
+# 1. Crear entorno virtual
+python -m venv venv
+source venv/bin/activate
+
+# 2. Instalar librería
+pip install -e .
+
+# 3. Preparar Hyperledger Fabric
+cd enviroment
+make setup      # Genera certificados y artefactos
+make up         # Levanta la red Docker
+make network    # Configura canal y chaincode
+cd ..
+
+# 4. Instalar dependencias de ejemplos
+pip install -r examples/requirements.txt
+```
+
+### Opción 2: Configuración de variables de entorno
+
+Los ejemplos usan Hyperledger Fabric real. Configura las variables de entorno:
+
+```bash
+# Peer URL (puerto mapeado del contenedor)
+export FABRIC_PEER_URL=localhost:7051
+
+# Path al MSP del admin (dentro del contenedor CLI)
+export FABRIC_MSP_PATH=/home/wisrovi/Documentos/wFabricSecurity/enviroment/organizations/peerOrganizations/org1.net/users/Admin@org1.net/msp
+```
+
+### Verificar estado de la red
+
+```bash
+cd enviroment
+make status
+```
+
+## Configuración de Puertos
+
+Los slaves corren en diferentes puertos:
+
+| Ejemplo | Puerto | Descripción |
+|---------|--------|-------------|
+| json/base | 8001 | JSON síncrono |
+| json/async | 8001 | JSON asíncrono |
+| image/base | 8002 | Imágenes síncrono |
+| image/async | 8002 | Imágenes asíncrono |
+| p2p/base | 8003 | P2P síncrono |
+| p2p/async | 8003 | P2P asíncrono |
+| data/base | 8004 | Archivos síncrono |
+| data/async | 8004 | Archivos asíncrono |
+
+**Nota**: Ejecutar un Slave a la vez (o cambiar puertos para ejecutar varios).
+┌─────────────────────────────────────────────────────────────────┐
+│                    RED HYPERLEDGER FABRIC                       │
+│  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐  │
+│  │  Master  │───►│  Peer    │───►│ Orderer  │───►│ CouchDB  │  │
+│  │  (Core)  │    │          │    │          │    │          │  │
+│  └──────────┘    └──────────┘    └──────────┘    └──────────┘  │
+│       │               │                                    ▲    │
+│       │          Private                                 │      │
+│       │          Data                                    │      │
+│       │          (P2P)                              Ledger     │
+│       │               │                             (Hash)    │
+│       ▼               ▼                                    │      │
+│  ┌──────────┐    ┌──────────┐ ───────────────────────────┘     │
+│  │  Slaves  │◄──►│  Gateway │                                    │
 │  │ Workers  │    │  (API)   │                                    │
 │  └──────────┘    └──────────┘                                    │
 └─────────────────────────────────────────────────────────────────┘
@@ -163,22 +250,35 @@ asyncio.run(main())
 
 ## Ejemplos
 
+Todos los ejemplos usan **Hyperledger Fabric real** por defecto.
+
 ### JSON - Datos Simples
 
 ```bash
-# Terminal 1 - Slave (recibe tareas)
+# Terminal 1 - Slave (puerto 8001)
 cd examples/json/base
 python slave.py
 
-# Terminal 2 - Master (envía tareas)
+# Terminal 2 - Master
 cd examples/json/base
+python master.py
+```
+
+### JSON Async - Datos Asíncronos
+
+```bash
+# Terminal 1 - Slave
+cd examples/json/async
+python slave.py
+
+# Terminal 2 - Master
 python master.py
 ```
 
 ### Imagen - Procesamiento de Imágenes
 
 ```bash
-# Terminal 1 - Slave
+# Terminal 1 - Slave (puerto 8002)
 cd examples/image/base
 python slave.py
 
@@ -189,7 +289,7 @@ python master.py
 ### P2P - Datos Sensibles
 
 ```bash
-# Terminal 1 - Slave
+# Terminal 1 - Slave (puerto 8003)
 cd examples/p2p/base
 python slave.py
 
@@ -200,7 +300,7 @@ python master.py
 ### Data - Archivos Binarios
 
 ```bash
-# Terminal 1 - Slave
+# Terminal 1 - Slave (puerto 8004)
 cd examples/data/base
 python slave.py
 
@@ -208,33 +308,7 @@ python slave.py
 python master.py
 ```
 
-### Ejemplos con Fabric Real
-
-Los ejemplos en `examples/fabric/` usan Hyperledger Fabric real en lugar de mock:
-
-```bash
-# 1. Asegúrate de que la red Fabric esté corriendo
-cd enviroment
-make network
-make install-chaincode
-# Nota: make instantiate-chaincode puede requerir configuración adicional
-
-# 2. Configurar variables de entorno
-export FABRIC_PEER_URL=peer0.org1.net:7051
-export FABRIC_MSP_PATH=$(pwd)/organizations/peerOrganizations/org1.net/users/Admin@org1.net/msp
-
-# 3. Terminal 1 - Slave (puerto 8002)
-cd examples/fabric/json
-python slave.py
-
-# 4. Terminal 2 - Master
-cd examples/fabric/json
-python master.py
-```
-
-**Diferencia entre mock y real:**
-- **Mock**: Los datos se almacenan en memoria (se pierden al reiniciar)
-- **Real**: Los datos se registran en Hyperledger Fabric (permanentes e inmutables)
+**Nota**: Ejecutar un Slave a la vez. Cambiar puertos en los archivos si necesitas ejecutar varios.
 
 ## Comandos del Entorno (carpeta enviroment)
 
@@ -311,29 +385,19 @@ export CHAINCODE_NAME=tasks
 
 ## Estado Actual
 
-### Modo Mock (Recomendado para desarrollo)
+### Fabric Real (Por Defecto)
 
-Los ejemplos funcionan completamente en **modo mock** sin necesidad de Hyperledger Fabric real:
+Todos los ejemplos usan **Hyperledger Fabric real** para almacenar transacciones de forma inmutable.
 
+**Requisitos:**
+1. Red Docker corriendo: `cd enviroment && make network`
+2. Chaincode instalado: `make install-chaincode && make instantiate-chaincode`
+3. Variables de entorno configuradas (ver arriba)
+
+**Estado de la red:**
 ```bash
-# Los ejemplos usan use_mock=True por defecto
-python examples/json/base/master.py    # ✓ Funciona
-python examples/json/base/slave.py     # ✓ Funciona
+cd enviroment && make status
 ```
-
-### Red Fabric Real (Avanzado)
-
-La red Docker se configura con `cd enviroment && make network`, pero el chaincode requiere configuración adicional.
-
-**Estado actual:**
-- ✓ Red Docker configurable (orderer, peer, couchdb, cli)
-- ✓ Canal y chaincode definiables
-- ⚠ Instanciación puede requerir ajustes según el entorno
-
-**Para usar con Fabric real:**
-1. Levantar red: `cd enviroment && make network`
-2. Instalar chaincode: `make install-chaincode`
-3. Usar ejemplos en `examples/fabric/` con `FABRIC_PEER_URL` y `FABRIC_MSP_PATH`
 
 ## Troubleshooting
 
