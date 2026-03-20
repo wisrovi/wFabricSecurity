@@ -227,10 +227,11 @@ configtxgen -profile ChannelProfile -channelID ${CHANNEL_NAME} -outputAnchorPeer
 
 echo "✓ Artefactos del canal generados"
 
-# 5. Preparar chaincode
+# 5. Preparar chaincode (solo si no existe go.mod)
 echo ""
 echo ">> Preparando chaincode..."
-cat > chaincode/tasks/go.mod << 'EOF'
+if [ ! -f chaincode/tasks/go.mod ]; then
+    cat > chaincode/tasks/go.mod << 'EOF'
 module tasks
 
 go 1.20
@@ -250,28 +251,7 @@ require (
 	google.golang.org/protobuf v1.34.1 // indirect
 )
 EOF
-
-# Crear go.sum
-cat > chaincode/tasks/go.sum << 'EOF'
-github.com/golang/protobuf v1.5.4 h1:i+1DLAR9jnY1NYknH1I49Mn6C/qJu1YP2KrLSiY58LE=
-github.com/golang/protobuf v1.5.4/go.mod h1:FDviiEEYAqOTN1qk5qPZLJOCB1iPK4eH7xNU4s8wqE0=
-github.com/hyperledger/fabric-chaincode-go v0.0.0-20240704073638-9fb89180dc17 h1:GNgBBsJwi7eJLHj1Q3h3JPhQ9L3M/I8S5gWxG8k+nmU=
-github.com/hyperledger/fabric-chaincode-go v0.0.0-20240704073638-9fb89180dc17/go.mod h1:R1NwJVGFv6q7XThPQNOpA7r7LnDEvT3oL9fL6ZVy4k=
-github.com/hyperledger/fabric-protos-go v0.3.4 h1:x7V9D/7FUBGxdLJC3hHHkIIgL2c3zCm+bGVU0WlnC0=
-github.com/hyperledger/fabric-protos-go v0.3.4/go.mod h1:SoDBg8qFOj5NGq3aAyJ18SwPs5S7v1A4/1q8T1N3N4M=
-golang.org/x/net v0.25.0 h1:d/OCCoBEUq33pjydKrGQhw7IlUPI2Oylr+8qLx49kac=
-golang.org/x/net v0.25.0/go.mod h1:d/xM4en7r/Q+9OCfPYkgFlpYWC2FZAi+3dKnlrHLt3w=
-golang.org/x/sys v0.20.0 h1:Od9JTbYCk261bKm4M/mw7AklTlFYIa0bIp9BgSm1S8Y=
-golang.org/x/sys v0.20.0/go.mod h1:spTPH65R69YU52JKQLRjTCi6TwRIinn4Dq6v/BRf5c=
-golang.org/x/text v0.15.0 h1:r4lAV3LKovZfc4jgY/2pE/rfY2j3qivPcpRsz+tC2k=
-golang.org/x/text v0.15.0/go.mod h1:TvPlkPrEEE2Kf3VCq5PNNAaepxhECSNASy2MaLC2nqo=
-google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 h1:qpOXX8twZmqS4+Tj6NqQcZMpT8R0y3RPlqIl8m3F2TU=
-google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157/go.mod h1:AFq4HBPMcMVK9uxOkwVnv4s+Nm2VIHTJfZBzpXN6HH8=
-google.golang.org/grpc v1.65.0 h1:bs/cUb4lp1G5iImFFd3u5ixQzweKizoZJAwBNLR42lc=
-google.golang.org/grpc v1.65.0/go.mod h1:W4TteufgZHEv4x9XkNoPmF4T25sN2rWC+sM5G1C4u4=
-google.golang.org/protobuf v1.34.1 h1:9fZABiNV8rm5jA+5x4y3z0dxmvqDiThAHl5oU3tlvMM=
-google.golang.org/protobuf v1.34.1/go.mod h1:qL4bnVvlV8jUNCHYFm2y4NUa4Gbc2QvIT6a6k1KHlPQ=
-EOF
+fi
 echo "✓ Chaincode preparado"
 
 # 6. Guardar variables en archivo para otros scripts

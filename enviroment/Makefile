@@ -48,11 +48,14 @@ install-chaincode:
 	@echo "Nota: Para instantiate, usa 'make instantiate-chaincode'"
 
 instantiate-chaincode:
-	@echo ">> Aprobando chaincode..."
-	@docker exec cli peer lifecycle chaincode approveformyorg -C mychannel -n tasks --version 1 --package-id tasks_1:96ed9e4b6d32ee90f7566998fa1fd3e3073cb6c40fd17aeaccaae74e3cf9b1ba --sequence 1 -o $(ORDERER_HOST):7050 || true
-	@echo ">> Commiteando chaincode..."
-	@docker exec cli peer lifecycle chaincode commit -C mychannel -n tasks --version 1 --sequence 1 -o $(ORDERER_HOST):7050 || true
-	@echo "✓ Chaincode instalado"
+	@PACKAGE_ID=$$(docker exec cli peer lifecycle chaincode queryinstalled 2>/dev/null | grep "tasks_1" | sed 's/Package ID: tasks_1:\([^,]*\).*/\1/') && \
+	echo ">> Aprobando chaincode (package: tasks_1:$$PACKAGE_ID)..." && \
+	docker exec cli peer lifecycle chaincode approveformyorg -C mychannel -n tasks --version 1 --package-id tasks_1:$$PACKAGE_ID --sequence 1 -o $(ORDERER_HOST):7050 --tls=false --cafile /etc/hyperledger/fabric/msp/tlscacerts/tlsroot.pem && \
+	echo ">> Commiteando chaincode..." && \
+	docker exec cli peer lifecycle chaincode commit -C mychannel -n tasks --version 1 --sequence 1 -o $(ORDERER_HOST):7050 --tls=false --cafile /etc/hyperledger/fabric/msp/tlscacerts/tlsroot.pem && \
+	echo ">> Inicializando chaincode..." && \
+	docker exec cli peer chaincode invoke -C mychannel -n tasks --isInit -c '{"function":"init","Args":[]}' -o $(ORDERER_HOST):7050 --tls=false --cafile /etc/hyperledger/fabric/msp/tlscacerts/tlsroot.pem || true && \
+	echo "✓ Chaincode instalado"
 
 down:
 	@echo ">> Deteniendo red..."

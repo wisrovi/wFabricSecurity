@@ -281,6 +281,33 @@ export CHAINCODE_NAME=tasks
 - `httpx` - Cliente HTTP async
 - `pillow` - Procesamiento de imágenes
 
+## Estado Actual
+
+### Modo Mock (Recomendado para desarrollo)
+
+Los ejemplos funcionan completamente en **modo mock** sin necesidad de Hyperledger Fabric real:
+
+```bash
+# Los ejemplos usan use_mock=True por defecto
+python examples/json/base/master.py    # ✓ Funciona
+python examples/json/base/slave.py     # ✓ Funciona
+```
+
+### Red Fabric Real (Avanzado)
+
+La red Docker está configurada y corriendo, pero la instanciación del chaincode tiene un problema de políticas de canal que requiere investigación adicional.
+
+**Estado actual:**
+- ✓ Red Docker corriendo (orderer, peer, couchdb, cli)
+- ✓ Canal "mychannel" creado y peer unido
+- ✓ Chaincode instalado (pero no instanciado)
+- ⚠ Instanciación pendiente por fix de políticas
+
+**Para usar con Fabric real, se necesita:**
+1. Solucionar el issue de políticas del canal
+2. Instanciar el chaincode con `make instantiate-chaincode`
+3. Modificar ejemplos para usar `use_mock=False`
+
 ## Troubleshooting
 
 ### Problema: "No such host"
@@ -309,6 +336,10 @@ make down && make up
 cd enviroment
 make install-chaincode
 ```
+
+### Problema: Instanciación falla con "implicit policy evaluation failed"
+
+Este es un problema conocido con la configuración de políticas del canal. Los ejemplos funcionan con modo mock.
 
 ## Licencia
 

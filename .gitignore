@@ -169,3 +169,8 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+enviroment/organizations/
+enviroment/*.block
+enviroment/*.tx
+enviroment/crypto-config.yaml
+enviroment/configtx.yaml
