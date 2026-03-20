@@ -1,213 +1,19 @@
 # wFabricSecurity
 
-**Librería Python para seguridad distribuida en Hyperledger Fabric usando un patrón Master-Slave con auditoría inmutable.**
+**Sistema de Seguridad Zero Trust para Hyperledger Fabric**
 
-## Descripción
+Librería Python que implementa un sistema completo de auditoría criptográfica distribuida con verificación de identidad, integridad de código, permisos de comunicación y validación de mensajes.
 
-wFabricSecurity permite implementar un sistema de **auditoría criptográfica distribuida** donde las tareas master delegan trabajo a slaves, pero ambos registran pruebas inmutables en Hyperledger Fabric para garantizar:
+## Características Principales
 
-- **No-repudio**: Ninguna parte puede negar haber participado
-- **Verificabilidad**: Cualquiera puede verificar la integridad
-- **Inmutabilidad**: Los registros no pueden ser alterados
+- 🔐 **Integridad de Código**: Verificación SHA-256 del código fuente
+- 🔑 **Firmas ECDSA**: Criptografía de curva elíptica para firmar mensajes
+- 🛡️ **Permisos de Comunicación**: Control de acceso Zero Trust
+- 📝 **Integridad de Mensajes**: Verificación de que los datos no fueron alterados
+- 📦 **Tipos de Datos**: JSON, Imágenes, Datos sensibles P2P, Archivos
+- 🏢 **Participantes**: Gestión de identidades con certificados X.509
 
-## Arquitectura
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    RED HYPERLEDGER FABRIC                       │
-│  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐  │
-│  │  Master  │───►│  Peer    │───►│ Orderer  │───►│ CouchDB  │  │
-│  │  (Core)  │    │          │    │          │    │          │  │
-│  └──────────┘    └──────────┘    └──────────┘    └──────────┘  │
-│       │               │                                    ▲    │
-│       │          Private                                 │      │
-│       │          Data                                    │      │
-│       │          (P2P)                              Ledger     │
-│       │               │                             (Hash)    │
-│       ▼               ▼                                    │      │
-│  ┌──────────┐    ┌──────────┐ ───────────────────────────┘     │
-│  │  Slaves  │◄──►│  Gateway │                                    │
-│  │  Workers  │    │  (API)   │                                    │
-│  └──────────┘    └──────────┘                                    │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-## Flujo de Trabajo
-
-1. **Master**: Genera hash SHA-256 del payload
-2. **Master**: Registra dato privado (P2P) + Hash en Ledger
-3. **Master**: Firma hash y envía a Slave (vía HTTP)
-4. **Slave** (FastAPI): Recibe, verifica firma, procesa
-5. **Slave**: Registra resultado en Ledger
-6. **Slave**: Devuelve resultado + firma al Master
-7. **Master**: Verifica firma del Slave
-
-## Instalación Rápida
-
-### Opción 1: Instalación completa con Fabric (Production)
-
-```bash
-# 1. Crear entorno virtual
-python -m venv venv
-source venv/bin/activate
-
-# 2. Instalar librería
-pip install -e .
-
-# 3. Preparar Hyperledger Fabric
-cd enviroment
-make setup      # Genera certificados y artefactos
-make up         # Levanta la red Docker
-make network    # Configura canal y chaincode
-cd ..
-
-# 4. Instalar dependencias de ejemplos
-pip install -r examples/requirements.txt
-```
-
-### Opción 2: Configuración de variables de entorno
-
-Los ejemplos usan Hyperledger Fabric real. Configura las variables de entorno:
-
-```bash
-# Peer URL (puerto mapeado del contenedor)
-export FABRIC_PEER_URL=localhost:7051
-
-# Path al MSP del admin (dentro del contenedor CLI)
-export FABRIC_MSP_PATH=/home/wisrovi/Documentos/wFabricSecurity/enviroment/organizations/peerOrganizations/org1.net/users/Admin@org1.net/msp
-```
-
-### Verificar estado de la red
-
-```bash
-cd enviroment
-make status
-```
-
-## Configuración de Puertos
-
-Los slaves corren en diferentes puertos:
-
-| Ejemplo | Puerto | Descripción |
-|---------|--------|-------------|
-| json/base | 8001 | JSON síncrono |
-| json/async | 8001 | JSON asíncrono |
-| image/base | 8002 | Imágenes síncrono |
-| image/async | 8002 | Imágenes asíncrono |
-| p2p/base | 8003 | P2P síncrono |
-| p2p/async | 8003 | P2P asíncrono |
-| data/base | 8004 | Archivos síncrono |
-| data/async | 8004 | Archivos asíncrono |
-
-**Nota**: Ejecutar un Slave a la vez (o cambiar puertos para ejecutar varios).
-┌─────────────────────────────────────────────────────────────────┐
-│                    RED HYPERLEDGER FABRIC                       │
-│  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐  │
-│  │  Master  │───►│  Peer    │───►│ Orderer  │───►│ CouchDB  │  │
-│  │  (Core)  │    │          │    │          │    │          │  │
-│  └──────────┘    └──────────┘    └──────────┘    └──────────┘  │
-│       │               │                                    ▲    │
-│       │          Private                                 │      │
-│       │          Data                                    │      │
-│       │          (P2P)                              Ledger     │
-│       │               │                             (Hash)    │
-│       ▼               ▼                                    │      │
-│  ┌──────────┐    ┌──────────┐ ───────────────────────────┘     │
-│  │  Slaves  │◄──►│  Gateway │                                    │
-│  │ Workers  │    │  (API)   │                                    │
-│  └──────────┘    └──────────┘                                    │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-## Flujo de Trabajo
-
-1. **Master**: Genera hash SHA-256 del payload
-2. **Master**: Registra dato privado (P2P) + Hash en Ledger
-3. **Master**: Firma hash y envía a Slave (vía HTTP)
-4. **Slave** (FastAPI): Recibe, verifica firma, procesa
-5. **Slave**: Registra resultado en Ledger
-6. **Slave**: Devuelve resultado + firma al Master
-7. **Master**: Verifica firma del Slave
-
-## Instalación Rápida
-
-### Opción 1: Instalación completa con Fabric (Production)
-
-```bash
-# 1. Crear entorno virtual
-python -m venv venv
-source venv/bin/activate
-
-# 2. Instalar librería
-pip install -e .
-
-# 3. Preparar Hyperledger Fabric
-cd enviroment
-make setup      # Genera certificados y artefactos
-make up         # Levanta la red Docker
-make network    # Configura canal y chaincode
-cd ..
-
-# 4. Instalar dependencias de ejemplos
-pip install -r examples/requirements.txt
-```
-
-### Opción 2: Ejemplos standalone (sin Fabric real)
-
-Los ejemplos pueden ejecutarse en modo **mock** sin necesidad de Hyperledger Fabric:
-
-```bash
-# 1. Crear entorno virtual
-python -m venv venv
-source venv/bin/activate
-
-# 2. Instalar librería
-pip install -e .
-
-# 3. Instalar dependencias de ejemplos
-pip install -r examples/requirements.txt
-
-# 4. Ejecutar ejemplos (usan modo mock por defecto)
-```
-
-## Estructura del Proyecto
-
-```
-wFabricSecurity/
-├── wFabricSecurity/        # Paquete Python
-│   ├── __init__.py
-│   └── fabric_security/    # Módulo principal
-│       └── fabric_security.py
-├── examples/               # Ejemplos funcionales
-│   ├── requirements.txt    # Dependencias
-│   ├── json/              # Datos JSON
-│   │   ├── base/          # Síncrono
-│   │   └── async/         # Async
-│   ├── image/             # Imágenes
-│   │   ├── base/
-│   │   └── async/
-│   ├── p2p/               # Datos sensibles
-│   │   ├── base/
-│   │   └── async/
-│   └── data/              # Archivos binarios
-│       ├── base/
-│       └── async/
-├── enviroment/            # Hyperledger Fabric
-│   ├── setup.sh           # Script de configuración
-│   ├── Makefile           # Comandos便捷
-│   ├── docker-compose.yaml # Servicios Docker
-│   ├── chaincode/         # Chaincode Go
-│   ├── organizations/     # Certificados
-│   └── channel-artifacts/ # Artefactos del canal
-├── requirements.txt       # Dependencias de la librería
-└── Makefile              # Comandos de la raíz
-```
-
-## Uso de la Librería
-
-### Sistema Zero Trust
-
-La librería implementa un sistema completo de seguridad Zero Trust:
+## Arquitectura Zero Trust
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -223,7 +29,7 @@ La librería implementa un sistema completo de seguridad Zero Trust:
 │  3. ¿La FIRMA del mensaje es válida?                                    │
 │     → Verifica ECDSA con certificado del remitente                      │
 │                                                                         │
-│  4. ¿El MENSAJE no fue ALTERADO?                                        │
+│  4. ¿El MENSAJE no fue ALTERADO?                                       │
 │     → Verifica hash SHA-256 del contenido                               │
 │                                                                         │
 │  5. ¿El CÓDIGO del destinatario es íntegro?                            │
@@ -232,31 +38,33 @@ La librería implementa un sistema completo de seguridad Zero Trust:
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Uso Básico con FabricSecuritySimple
+## Instalación Rápida
 
-Para casos simples, usa `FabricSecuritySimple`:
+```bash
+# 1. Clonar repositorio
+git clone https://github.com/wisrovi/wFabricSecurity.git
+cd wFabricSecurity
 
-```python
-from wFabricSecurity import FabricSecuritySimple
+# 2. Crear entorno virtual
+python -m venv venv
+source venv/bin/activate
 
-security = FabricSecuritySimple(
-    me="MiIdentidad",
-    msp_path="/path/to/msp"
-)
+# 3. Instalar librería
+pip install -e .
 
-# Registrar identidad
-security.register_identity()
+# 4. Preparar Hyperledger Fabric
+cd enviroment
+make setup
+make up
+cd ..
 
-# Registrar código
-security.register_code(["mi_script.py"], "1.0.0")
-
-# Verificar integridad
-security.verify_code()
+# 5. Instalar dependencias de ejemplos
+pip install -r examples/requirements.txt
 ```
 
-### Uso Avanzado con FabricSecurity (Zero Trust)
+## Uso Básico
 
-Para máxima seguridad, usa `FabricSecurity`:
+### Sistema Zero Trust Completo
 
 ```python
 from wFabricSecurity import FabricSecurity
@@ -266,22 +74,22 @@ security = FabricSecurity(
     msp_path="/path/to/msp"
 )
 
-# Registrar identidad y código
+# 1. Registrar identidad y código
 security.register_identity()
 security.register_code(["master.py"], "1.0.0")
 
-# Registrar permisos de comunicación
+# 2. Registrar permisos de comunicación
 security.register_communication("CN=Master", "CN=Slave")
 
-# Crear mensaje firmado
+# 3. Crear mensaje firmado
 message = security.create_message(
     recipient="CN=Slave",
-    content='{"data": "importante"}'
+    content='{"operacion": "proceso_datos"}'
 )
 
-# Verificar mensaje recibido
+# 4. Verificar mensaje recibido
 if security.verify_message(message):
-    print("Mensaje válido")
+    print("✅ Mensaje válido")
 ```
 
 ### Decoradores Master-Slave
@@ -289,7 +97,7 @@ if security.verify_message(message):
 ```python
 # MASTER - Envía tareas auditadas
 @security.master_audit(task_prefix="TASK", trusted_slaves=["CN=Slave"])
-def enviar_tarea(payload, task_id, hash_a, sig, my_id):
+def enviar_tarea(payload, task_id, hash_a, sig, my_id, message):
     return enviar_a_slave(payload)
 
 # SLAVE - Procesa tareas con verificación
@@ -298,284 +106,183 @@ def procesar_tarea(payload):
     return procesar(payload)
 ```
 
-## Code Signing (Firma de Código)
-
-La librería soporta **verificación de integridad de código** usando ECDSA y hash SHA-256. Esto garantiza que el código no ha sido modificado maliciosamente.
-
-### Concepto
-
-Cada servicio (Master/Slave) tiene:
-1. **Certificado X.509** - Identidad (contiene clave pública)
-2. **Clave privada** - Para firmar (almacenada en keystore del MSP)
-3. **Code hash** - Hash SHA-256 del código fuente
-
-### Registro de Código
+### Sistema Simplificado
 
 ```python
-from fabric_security import FabricSecurity
+from wFabricSecurity import FabricSecuritySimple
 
-security = FabricSecurity(me="Master")
+security = FabricSecuritySimple(me="MiServicio")
 
-# Registrar código al iniciar
-security.register_code(
-    code_paths=["master.py", "utils.py"],
-    version="1.0.0"
-)
+@security.master_audit(task_prefix="TASK", trusted_slaves=["SLAVE"])
+def mi_tarea(payload, task_id, hash_a, sig, my_id):
+    return {"resultado": "procesado"}
 ```
 
-### Verificación de Integridad
+## Ejemplos de Uso
+
+### Datos JSON
 
 ```python
-# Verificar antes de operaciones sensibles
-try:
-    security.verify_code(["master.py"])
-    # Código íntegro, continuar
-except CodeIntegrityError:
-    # ¡Código modificado! Alertar y detener
-    raise SecurityError("Código ha sido alterado")
+payload = {
+    "tipo": "analisis_datos",
+    "datos": {
+        "usuario": "juan_perez",
+        "email": "juan@example.com",
+        "edad": 30
+    }
+}
+# El hash SHA-256 se calcula automáticamente
+# La firma ECDSA se genera con la clave privada
 ```
 
-### Flujo Completo
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│ FABRIC LEDGER (inmutable)                                       │
-├──────────────────────────────────────────────────────────────────┤
-│ Registro de Identidad:                                          │
-│   identity: "CN=Master@org1.net"                               │
-│   code_hash: "sha256:abc123..."                                 │
-│   version: "v1.0.0"                                            │
-│   timestamp: "2024-01-01 10:00:00"                            │
-├──────────────────────────────────────────────────────────────────┤
-│ Registro de Tarea:                                              │
-│   task_id: "task_001"                                          │
-│   hash_a: "sha256:xyz789..."                                    │
-│   master_sig: "base64:firma..."                                 │
-└──────────────────────────────────────────────────────────────────┘
-```
-
-### Estructura de Identidades
-
-Cada participante tiene su propio par de claves en su MSP:
-
-```
-organizations/peerOrganizations/org1.net/users/
-├── Admin@org1.net/msp/        ← Admin del sistema
-│   ├── signcerts/cert.pem      ← Certificado (clave pública)
-│   └── keystore/key.pem        ← Clave privada
-├── Master@org1.net/msp/        ← Master usa este
-│   ├── signcerts/cert.pem
-│   └── keystore/key.pem
-└── Slave@org1.net/msp/         ← Slave usa este
-    ├── signcerts/cert.pem
-    └── keystore/key.pem
-```
-
-### Ejemplo: Registro de identidad Master
+### Imágenes
 
 ```python
-from wFabricSecurity import FabricSecurity
+import base64
 
-security = FabricSecurity(
-    me="Master",
-    msp_path="/path/to/Master@org1.net/msp"
-)
+with open("imagen.png", "rb") as f:
+    image_data = base64.b64encode(f.read()).decode()
 
-# Registrar identidad y código
-security.register_identity()
-security.register_code(["master.py"], "1.0.0")
-
-# Usar en decoradores
-@security.master_audit(task_prefix="MY_TASK", trusted_slaves=["CN=Slave@org1.net"])
-def process_data(payload, task_id, hash_a, sig, my_id):
-    # El código está verificado automáticamente
-    pass
+# La imagen se transmite con hash de verificación
+# El slave verifica la integridad antes de procesar
 ```
 
-## Ejemplos
+### Datos Sensibles (P2P)
 
-Todos los ejemplos usan **Hyperledger Fabric real** por defecto.
+```python
+payload = {
+    "tipo": "datos_sensibles",
+    "datos": {
+        "tarjeta": "**** **** **** 1234",
+        "cvv": "***",
+        "propietario": "Juan Perez"
+    }
+}
+# Requiere permisos específicos para este tipo de datos
+```
 
-### JSON - Datos Simples
+### Archivos Binarios
+
+```python
+with open("documento.pdf", "rb") as f:
+    file_data = base64.b64encode(f.read()).decode()
+
+# El archivo se transmite como base64
+# Hash SHA-256 garantiza integridad
+```
+
+## Tests
 
 ```bash
-# Terminal 1 - Slave (puerto 8001)
-cd examples/json/base
-python slave.py
+cd examples
 
-# Terminal 2 - Master
-cd examples/json/base
-python master.py
+# Ejecutar todos los tests
+make test
+
+# Tests específicos
+make test-core          # Tests de librería core
+make test-json         # Tests de JSON
+make test-image        # Tests de imágenes
+make test-p2p          # Tests P2P
+make test-data         # Tests de archivos
+
+# Generar reporte HTML
+make report
 ```
 
-### JSON Async - Datos Asíncronos
+## Reportes de Tests
+
+Genera reportes profesionales en HTML con:
+
+- 📅 Fecha y hora de ejecución
+- 📊 Estadísticas de resultados
+- 🔐 Detalle de cada funcionalidad validada
+- 📦 Tipos de datos soportados
+- 📈 Gráfico visual de distribución
 
 ```bash
-# Terminal 1 - Slave
-cd examples/json/async
-python slave.py
-
-# Terminal 2 - Master
-python master.py
+make report          # Generar reporte
+make view-report     # Ver último reporte
 ```
 
-### Imagen - Procesamiento de Imágenes
+## Estructura del Proyecto
 
-```bash
-# Terminal 1 - Slave (puerto 8002)
-cd examples/image/base
-python slave.py
-
-# Terminal 2 - Master
-python master.py
+```
+wFabricSecurity/
+├── wFabricSecurity/           # Paquete Python
+│   └── fabric_security/      # Módulo principal
+│       └── fabric_security.py # Sistema Zero Trust
+├── examples/                  # Ejemplos funcionales
+│   ├── json/                 # Ejemplos JSON
+│   ├── image/                # Ejemplos de imágenes
+│   ├── p2p/                 # Ejemplos P2P
+│   ├── data/                 # Ejemplos de archivos
+│   ├── test/                 # Tests automatizados
+│   │   ├── test_library.py   # Tests core
+│   │   ├── test_zero_trust.py # Tests Zero Trust
+│   │   └── reports/          # Reportes HTML
+│   └── Makefile              # Comandos de examples
+├── enviroment/               # Hyperledger Fabric
+│   ├── docker-compose.yaml   # Servicios Docker
+│   ├── chaincode/            # Chaincode Go
+│   └── organizations/         # Certificados
+├── README.md                 # Este archivo
+└── requirements.txt          # Dependencias
 ```
 
-### P2P - Datos Sensibles
+## Clases Principales
 
-```bash
-# Terminal 1 - Slave (puerto 8003)
-cd examples/p2p/base
-python slave.py
+### Message
+Representa un mensaje firmado con remitente, destinatario, hash y firma.
 
-# Terminal 2 - Master
-python master.py
-```
+### Participant
+Representa un participante con identidad, code_hash, versión y permisos.
 
-### Data - Archivos Binarios
+### Excepciones
+- `CodeIntegrityError`: El código fue modificado
+- `PermissionDeniedError`: Sin permiso de comunicación
+- `MessageIntegrityError`: El mensaje fue alterado
+- `SignatureError`: La firma es inválida
 
-```bash
-# Terminal 1 - Slave (puerto 8004)
-cd examples/data/base
-python slave.py
-
-# Terminal 2 - Master
-python master.py
-```
-
-**Nota**: Ejecutar un Slave a la vez. Cambiar puertos en los archivos si necesitas ejecutar varios.
-
-## Comandos del Entorno (carpeta enviroment)
-
-```bash
-make help          # Ver todos los comandos
-make setup         # Generar certificados y artefactos
-make up            # Levantar red Docker
-make down          # Detener red
-make clean         # Limpiar todo
-make network       # Configurar canal
-make install-chaincode  # Instalar chaincode
-```
-
-## Comandos de la Raíz
-
-```bash
-make install-dev   # Instalar librería en desarrollo
-make install-pypi  # Instalar desde PyPI
-make lint          # Verificar código
-make clean         # Limpiar archivos generados
-```
-
-## Configuración de Fabric
+## Configuración
 
 ### Variables de Entorno
 
 ```bash
-export ORDERER_HOST=orderer.net
-export ORDERER_PORT=7050
-export PEER_HOST=peer0.org1.net
-export PEER_PORT=7051
-export CHANNEL_NAME=mychannel
-export CHAINCODE_NAME=tasks
+export FABRIC_PEER_URL=localhost:7051
+export FABRIC_MSP_PATH=/path/to/msp
+export FABRIC_MSP_PATH=/path/to/users/Admin@org1.net/msp
 ```
 
-### Arquitectura de la Red
+### MSP (Membership Service Provider)
 
 ```
-┌──────────────────────────────────────────────┐
-│              Red Docker "fabric"            │
-│                                              │
-│  ┌──────────────┐      ┌──────────────┐   │
-│  │ orderer.net  │      │ peer0.org1.net│   │
-│  │   :7050      │◄────►│    :7051      │   │
-│  └──────────────┘      └──────────────┘   │
-│                              │              │
-│                              ▼              │
-│                      ┌──────────────┐      │
-│                      │   couchdb0   │      │
-│                      │    :5984     │      │
-│                      └──────────────┘      │
-│                                              │
-│  ┌──────────────────────────────────────┐   │
-│  │              cli                      │   │
-│  │  (Administración y chaincode)       │   │
-│  └──────────────────────────────────────┘   │
-└──────────────────────────────────────────────┘
+organizations/peerOrganizations/org1.net/users/
+├── Admin@org1.net/msp/        # Admin
+├── Master@org1.net/msp/        # Identidad Master
+└── Slave@org1.net/msp/         # Identidad Slave
+    ├── signcerts/cert.pem      # Certificado (clave pública)
+    └── keystore/key.pem         # Clave privada
 ```
 
-## Dependencias
-
-### Librería principal (requirements.txt)
-- `fabric-gateway-python` - Cliente de Hyperledger Fabric
-- `cryptography` - Criptografía
-- `ecdsa` - Firmas ECDSA
-- `loguru` - Logging
-
-### Ejemplos (examples/requirements.txt)
-- `fastapi` - API del Slave
-- `uvicorn` - Servidor ASGI
-- `requests` - Cliente HTTP síncrono
-- `httpx` - Cliente HTTP async
-- `pillow` - Procesamiento de imágenes
-
-## Estado Actual
-
-### Fabric Real (Por Defecto)
-
-Todos los ejemplos usan **Hyperledger Fabric real** para almacenar transacciones de forma inmutable.
-
-**Requisitos:**
-1. Red Docker corriendo: `cd enviroment && make network`
-2. Chaincode instalado: `make install-chaincode && make instantiate-chaincode`
-3. Variables de entorno configuradas (ver arriba)
-
-**Estado de la red:**
-```bash
-cd enviroment && make status
-```
-
-## Troubleshooting
-
-### Problema: "No such host"
-
-```bash
-# Verificar que la red Docker existe
-docker network ls | grep fabric
-
-# Crear la red si no existe
-docker network create fabric
-```
-
-### Problema: "Connection refused"
-
-```bash
-# Verificar que los contenedores están corriendo
-docker ps
-
-# Reiniciar los contenedores
-make down && make up
-```
-
-### Problema: Chaincode no encontrado
+## Comandos del Entorno
 
 ```bash
 cd enviroment
-make install-chaincode
+
+make setup        # Generar certificados y artefactos
+make up           # Levantar red Docker
+make down         # Detener red
+make clean        # Limpiar todo
+make status      # Ver estado de la red
 ```
 
-### Problema: Instanciación falla con "implicit policy evaluation failed"
+## Documentación Adicional
 
-Este es un problema conocido con la configuración de políticas del canal. Los ejemplos funcionan con modo mock.
+- [README de Examples](examples/README.md) - Documentación detallada de ejemplos
+- [Tests](examples/test/) - Suite completa de tests automatizados
+- [Reportes](examples/test/reports/) - Reportes HTML de tests
 
 ## Licencia
 
-MIT - Ver archivo `LICENSE`
+MIT License
