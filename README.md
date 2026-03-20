@@ -248,6 +248,100 @@ async def main():
 asyncio.run(main())
 ```
 
+## Code Signing (Firma de Código)
+
+La librería soporta **verificación de integridad de código** usando ECDSA y hash SHA-256. Esto garantiza que el código no ha sido modificado maliciosamente.
+
+### Concepto
+
+Cada servicio (Master/Slave) tiene:
+1. **Certificado X.509** - Identidad (contiene clave pública)
+2. **Clave privada** - Para firmar (almacenada en keystore del MSP)
+3. **Code hash** - Hash SHA-256 del código fuente
+
+### Registro de Código
+
+```python
+from fabric_security import FabricSecurity
+
+security = FabricSecurity(me="Master")
+
+# Registrar código al iniciar
+security.register_code(
+    code_paths=["master.py", "utils.py"],
+    version="1.0.0"
+)
+```
+
+### Verificación de Integridad
+
+```python
+# Verificar antes de operaciones sensibles
+try:
+    security.verify_code(["master.py"])
+    # Código íntegro, continuar
+except CodeIntegrityError:
+    # ¡Código modificado! Alertar y detener
+    raise SecurityError("Código ha sido alterado")
+```
+
+### Flujo Completo
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│ FABRIC LEDGER (inmutable)                                       │
+├──────────────────────────────────────────────────────────────────┤
+│ Registro de Identidad:                                          │
+│   identity: "CN=Master@org1.net"                               │
+│   code_hash: "sha256:abc123..."                                 │
+│   version: "v1.0.0"                                            │
+│   timestamp: "2024-01-01 10:00:00"                            │
+├──────────────────────────────────────────────────────────────────┤
+│ Registro de Tarea:                                              │
+│   task_id: "task_001"                                          │
+│   hash_a: "sha256:xyz789..."                                    │
+│   master_sig: "base64:firma..."                                 │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### Estructura de Identidades
+
+Cada participante tiene su propio par de claves en su MSP:
+
+```
+organizations/peerOrganizations/org1.net/users/
+├── Admin@org1.net/msp/        ← Admin del sistema
+│   ├── signcerts/cert.pem      ← Certificado (clave pública)
+│   └── keystore/key.pem        ← Clave privada
+├── Master@org1.net/msp/        ← Master usa este
+│   ├── signcerts/cert.pem
+│   └── keystore/key.pem
+└── Slave@org1.net/msp/         ← Slave usa este
+    ├── signcerts/cert.pem
+    └── keystore/key.pem
+```
+
+### Ejemplo: Registro de identidad Master
+
+```python
+from wFabricSecurity import FabricSecurity
+
+security = FabricSecurity(
+    me="Master",
+    msp_path="/path/to/Master@org1.net/msp"
+)
+
+# Registrar identidad y código
+security.register_identity()
+security.register_code(["master.py"], "1.0.0")
+
+# Usar en decoradores
+@security.master_audit(task_prefix="MY_TASK", trusted_slaves=["CN=Slave@org1.net"])
+def process_data(payload, task_id, hash_a, sig, my_id):
+    # El código está verificado automáticamente
+    pass
+```
+
 ## Ejemplos
 
 Todos los ejemplos usan **Hyperledger Fabric real** por defecto.
