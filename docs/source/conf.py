@@ -1,6 +1,6 @@
 """
 Sphinx configuration for wFabricSecurity documentation.
-Professional, paginated documentation with search and navigation features.
+Professional documentation with modern design and features.
 """
 
 import os
@@ -16,7 +16,6 @@ release = "1.0.0"
 version = "1.0"
 
 # -- General Configuration ---------------------------------------------------
-# Patterns to ignore when building docs
 exclude_patterns = [
     "_build",
     "Thumbs.db",
@@ -24,39 +23,33 @@ exclude_patterns = [
     "**.md",
     "_inc",
     "*.pyc",
+    "*.tmp",
 ]
 
-# Add project root to path for autodoc
 sys.path.insert(0, os.path.abspath("../.."))
 
-# Supported source file extensions
 source_suffix = {
     ".rst": "restructuredtext",
     ".md": "markdown",
 }
 
-# Master doc (top-level document)
 master_doc = "index"
-
-# Language for content
 language = "en"
 
 # -- Extensions Configuration ------------------------------------------------
 extensions = [
-    # Documentation
     "sphinx.ext.autodoc",
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
     "sphinx.ext.todo",
     "sphinx.ext.napoleon",
-    # UI/UX
+    "sphinx.ext.graphviz",
     "sphinx_copybutton",
     "sphinx_design",
-    # Markdown
     "myst_parser",
-    # SEO/Sitemap
     "sphinx_sitemap",
+    "sphinx.ext.inheritance_diagram",
 ]
 
 # -- Autodoc Configuration ---------------------------------------------------
@@ -68,14 +61,14 @@ autodoc_default_options = {
     "show-inheritance": True,
     "exclude-members": "__weakref__",
     "inherited-members": True,
+    "autosummary": True,
 }
 
-# Autodoc type hints
 autodoc_typehints = "description"
 autodoc_class_signature = "separated"
 autodoc_member_order = "bysource"
 
-# -- Napoleon (Google/NumPy Style) Configuration ------------------------------
+# -- Napoleon (Google/NumPy Style) -------------------------------------------
 napoleon_google_docstring = True
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = True
@@ -93,6 +86,7 @@ napoleon_type_aliases = None
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
+    "fabric": ("https://hyperledger-fabric.readthedocs.io/en/latest/", None),
 }
 intersphinx_timeout = 10
 intersphinx_cache_limit = 5
@@ -102,12 +96,22 @@ viewcode_follow_imported_members = True
 
 # -- Todo Configuration ------------------------------------------------------
 todo_include_todos = True
+todo_app以北 = "See the :doc:`changelog` for details"
 
 # -- Copybutton Configuration ------------------------------------------------
-copybutton_prompt_text = r">>> |\.\.\. |\$ "
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[.*\]: |Out \[.*\]: "
 copybutton_copy_empty_lines = False
 copybutton_nesting_indent = False
 copybutton_known_references = ["# In\\[.*\\]:", "# Out\\[.*\\]:"]
+copybutton_gt_label = "Out"
+
+# -- Graphviz Configuration -------------------------------------------------
+graphviz_output_format = "svg"
+graphviz_dot_args = [
+    "-Gfontname=Helvetica",
+    "-Nfontname=Helvetica",
+    "-Efontname=Helvetica",
+]
 
 # -- HTML Output Configuration ----------------------------------------------
 html_theme = "sphinx_rtd_theme"
@@ -116,32 +120,18 @@ html_theme_options = {
     "display_version": True,
     "prev_next_buttons_location": "both",
     "style_external_links": True,
-    "style_nav_header_depth": 2,
     "collapse_navigation": False,
     "sticky_navigation": True,
     "navigation_depth": 4,
-    "includehidden": True,
-    "titles_only": False,
-    "navigation_expand_ids": True,
-    "navigation_expand_articles": True,
-    "navigation_expand_that": True,
-    "navigation_expand_nested": True,
-    "use_edit_page_button": True,
-    "show_powered_by": False,
-    "analytics_id": "",
-    "logo": {
-        "image_light": "_static/logo-light.png",
-        "image_dark": "_static/logo-dark.png",
-    },
+    "includeboostrap": True,
+    "boostrap_version": "3",
 }
 
-# Meta tags
 html_title = "wFabricSecurity Documentation"
 html_short_title = "wFabricSecurity"
-html_description = "Zero Trust Security System for Hyperledger Fabric"
+html_description = "Zero Trust Security System for Hyperledger Fabric - Cryptographic identity verification, code integrity, and secure communication"
 html_last_updated = datetime.now().strftime("%B %d, %Y")
 
-# Additional context for templates
 html_context = {
     "display_github": True,
     "github_user": "wisrovi",
@@ -150,11 +140,17 @@ html_context = {
     "conf_py_path": "/docs/source/",
     "source_suffix": ".rst",
     "use_edit_page": True,
+    "github_url": "https://github.com/wisrovi/wFabricSecurity",
 }
 
-# Static files
 html_static_path = ["_static"]
 html_css_files = ["css/custom.css"]
+
+# -- Favicon -----------------------------------------------------------------
+html_favicon = "_static/favicon.ico"
+
+# -- Additional files --------------------------------------------------------
+html_extra_path = ["_extra"]
 
 # -- HTML Help Output -------------------------------------------------------
 htmlhelp_basename = "wFabricSecuritydoc"
@@ -173,6 +169,12 @@ latex_documents = [
     ),
 ]
 
+latex_elements = {
+    "papersize": "letterpaper",
+    "pointsize": "10pt",
+    "preamble": "\\usepackage{hyperref}",
+}
+
 # -- Linkcheck --------------------------------------------------------------
 linkcheck_retries = 3
 linkcheck_timeout = 30
@@ -180,20 +182,25 @@ linkcheck_anchors = True
 linkcheck_ignore = [
     r"https://es\.linkedin\.com/.*",
     r"https://twitter\.com/.*",
+    r"https://github\.com/.*",
 ]
 
 # -- Sitemap Configuration --------------------------------------------------
 html_baseurl = "https://wFabricSecurity.readthedocs.io/en/latest/"
 sitemap_url_scheme = "https"
+sitemap_loc = "https://wFabricSecurity.readthedocs.io/en/latest/sitemap.xml"
 
-# -- Page Pagination --------------------------------------------------------
-# Custom JavaScript for pagination (if needed)
+# -- Canonical URL -----------------------------------------------------------
+html_context["canonical_url"] = "https://wFabricSecurity.readthedocs.io/en/latest/"
+
+# -- Templates --------------------------------------------------------------
 templates_path = ["_templates"]
 
 # -- Suppress Warnings -----------------------------------------------------
 suppress_warnings = [
     "myst.xref_missing",
     "autosectionlabel.*",
+    "image.not_readable",
 ]
 
 # -- Nitpicky Mode ---------------------------------------------------------
@@ -206,4 +213,12 @@ myst_enable_extensions = [
     "deflist",
     "tasklist",
     "amsmath",
+    " Substitution",
 ]
+
+myst_substitutions = {
+    "project": "wFabricSecurity",
+    "version": "1.0.0",
+    "author": "William Rodriguez",
+    "year": datetime.now().year,
+}

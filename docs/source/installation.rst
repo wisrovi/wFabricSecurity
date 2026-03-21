@@ -1,3 +1,5 @@
+.. _installation:
+
 ============
 Installation
 ============
@@ -6,14 +8,192 @@ This guide provides detailed instructions for installing and configuring wFabric
 
 |
 
----------------------------
-Standard Installation
----------------------------
+.. contents::
+   :local:
+   :depth: 3
 
 |
 
+|
+
+----
+
+|
+
+.. _installation-requirements:
+
+============
+Requirements
+============
+
+|
+
+.. _installation-python:
+
+Python
+------
+
+|
+
+wFabricSecurity requires **Python 3.10** or higher.
+
+|
+
+.. code-block:: bash
+
+   # Check your Python version
+   python --version
+
+   # If you need to install Python 3.10+
+   # Visit: https://www.python.org/downloads/
+
+|
+
+|
+
+.. _installation-os:
+
+Operating System
+----------------
+
+|
+
+wFabricSecurity is tested and supported on:
+
+|
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - OS
+     - Status
+   * - **Ubuntu 20.04+**
+     - ✅ Fully supported
+   * - **Debian 11+**
+     - ✅ Fully supported
+   * - **macOS 11+**
+     - ✅ Fully supported
+   * - **Windows 10+**
+     - ✅ Fully supported
+   * - **Windows Subsystem for Linux**
+     - ✅ Fully supported
+
+|
+
+|
+
+.. _installation-optional:
+
+Optional Dependencies
+---------------------
+
+|
+
+For full functionality, you may also need:
+
+|
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Dependency
+     - Required For
+   * - **Hyperledger Fabric Gateway SDK**
+     - Fabric network integration
+   * - **OpenSSL**
+     - Certificate operations
+   * - **Git**
+     - Installing from source
+
+|
+
+|
+
+----
+
+|
+
+.. _installation-pip:
+
+==============
+Installation via pip
+==============
+
+|
+
+The easiest way to install wFabricSecurity is using pip:
+
+|
+
+.. code-block:: bash
+
+   # Standard installation
+   pip install wFabricSecurity
+
+   # With minimal dependencies
+   pip install wFabricSecurity --no-deps
+
+   # Specific version
+   pip install wFabricSecurity==1.0.0
+
+   # Upgrade to latest version
+   pip install --upgrade wFabricSecurity
+
+|
+
+|
+
+.. _installation-venv:
+
+Virtual Environment (Recommended)
+---------------------------------
+
+|
+
+It's recommended to install wFabricSecurity in a virtual environment:
+
+|
+
+.. code-block:: bash
+
+   # Create a virtual environment
+   python -m venv wfabric-env
+
+   # Activate it (Linux/macOS)
+   source wfabric-env/bin/activate
+
+   # Activate it (Windows)
+   wfabric-env\Scripts\activate
+
+   # Install wFabricSecurity
+   pip install wFabricSecurity
+
+|
+
+|
+
+----
+
+|
+
+.. _installation-source:
+
+===============
+Installation from Source
+===============
+
+|
+
+To install from source for development or testing:
+
+|
+
+.. _installation-clone:
+
 Clone the Repository
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 
 |
 
@@ -24,26 +204,16 @@ Clone the Repository
 
 |
 
-Create Virtual Environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+|
+
+.. _installation-editable:
+
+Editable Install
+----------------
 
 |
 
-.. code-block:: bash
-
-   # Create virtual environment
-   python -m venv venv
-
-   # Activate (Linux/Mac)
-   source venv/bin/activate
-
-   # Activate (Windows)
-   venv\Scripts\activate
-
-|
-
-Install Package
-~~~~~~~~~~~~~~
+For development, install in editable mode:
 
 |
 
@@ -53,189 +223,343 @@ Install Package
 
 |
 
-Install Development Dependencies
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+|
+
+.. _installation-dev:
+
+Development Install
+-------------------
+
+|
+
+Install with all development dependencies:
 
 |
 
 .. code-block:: bash
 
-   pip install pylint black isort pytest pytest-cov
+   pip install -e ".[dev]"
 
 |
 
-Verify Installation
-~~~~~~~~~~~~~~~~~~
+This includes:
 
 |
 
-.. code-block:: python
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
-   python -c "from wFabricSecurity import FabricSecurity; print('Installation successful!')"
+   * - Package
+     - Purpose
+   * - **pytest**
+     - Testing framework
+   * - **pytest-cov**
+     - Code coverage
+   * - **pytest-asyncio**
+     - Async testing
+   * - **black**
+     - Code formatting
+   * - **ruff**
+     - Linting
+   * - **sphinx**
+     - Documentation
 
 |
 
--------------------
+|
+
+----
+
+|
+
+.. _installation-docker:
+
+==============
 Docker Installation
--------------------
+==============
 
 |
 
-Using Docker for development:
+You can also run wFabricSecurity in a Docker container:
 
 |
 
 .. code-block:: dockerfile
 
-   FROM python:3.10-slim
+   FROM python:3.11-slim
 
    WORKDIR /app
+
+   # Install wFabricSecurity
+   RUN pip install wFabricSecurity
+
+   # Copy your application
    COPY . /app
-   RUN pip install -e .
 
-   CMD ["python", "-c", "from wFabricSecurity import FabricSecurity; print('OK')"]
-
-|
-
----------------------------
-Hyperledger Fabric Setup
----------------------------
+   # Run your application
+   CMD ["python", "your_app.py"]
 
 |
 
-Prerequisites
-~~~~~~~~~~~~
-
-* Docker Engine 20.10+
-* Docker Compose v2+
-* 4GB RAM minimum for Fabric
-
-|
-
-Setup Commands
-~~~~~~~~~~~~~
+Build and run:
 
 |
 
 .. code-block:: bash
 
-   cd enviroment
+   # Build the image
+   docker build -t my-wfabric-app .
 
-   # Generate certificates and artifacts
-   make setup
-
-   # Start Docker network
-   make up
-
-   # Verify network status
-   docker ps
+   # Run the container
+   docker run -v /path/to/msp:/app/msp my-wfabric-app
 
 |
 
----------------
+|
+
+----
+
+|
+
+.. _installation-verify:
+
+===============
+Verification
+===============
+
+|
+
+After installation, verify everything is working:
+
+|
+
+.. code-block:: bash
+
+   # Verify Python import
+   python -c "from wFabricSecurity import FabricSecurity; print('✓ Import successful')"
+
+   # Run version check
+   python -c "import wFabricSecurity; print(f'Version: {wFabricSecurity.__version__}')"
+
+   # Run built-in tests
+   pytest --co -q
+
+|
+
+|
+
+----
+
+|
+
+.. _installation-config:
+
+===============
 Configuration
----------------
+===============
 
 |
 
-Environment Variables
-~~~~~~~~~~~~~~~~~~~~
+.. _installation-msp:
+
+MSP Configuration
+-----------------
 
 |
 
-Set these environment variables for production deployments:
+The Membership Service Provider (MSP) contains your cryptographic credentials:
 
 |
 
-.. code-block:: bash
+.. code-block:: text
 
-   # Required for Fabric integration
-   export FABRIC_PEER_URL=localhost:7051
-   export FABRIC_MSP_PATH=/path/to/msp
-   export FABRIC_CHANNEL=mychannel
-   export FABRIC_CHAINCODE=tasks
-
-   # Optional: Rate limiting
-   export RATE_LIMIT_RPS=100
-   export RETRY_MAX_ATTEMPTS=3
+   msp/
+   ├── cacerts/           # CA certificates
+   ├── signcerts/         # Signing certificates
+   ├── keystore/          # Private keys
+   ├── admincerts/         # Admin certificates
+   └── tlscacerts/         # TLS CA certificates
 
 |
 
-Configuration File
-~~~~~~~~~~~~~~~~~
+Typical MSP path:
 
 |
 
-Create a ``config.yaml`` file:
+.. code-block:: python
+
+   # Production
+   msp_path = "/etc/hyperledger/msp"
+
+   # Development
+   msp_path = "./test/msp"
+
+   # Docker
+   msp_path = "/fabric/msp"
+
+|
+
+|
+
+.. _installation-gateway:
+
+Gateway Configuration
+--------------------
+
+|
+
+For Fabric integration, you'll need a gateway connection profile:
 
 |
 
 .. code-block:: yaml
 
-   # Local Storage
-   local_data_dir: /tmp/fabric_security_data
-
-   # Fabric Configuration
-   fabric_channel: mychannel
-   fabric_chaincode: tasks
-   fabric_peer_url: localhost:7051
-
-   # Retry Settings
-   retry_max_attempts: 3
-   retry_backoff_factor: 1.5
-   retry_initial_delay: 0.5
-
-   # Rate Limiting
-   rate_limit_requests_per_second: 100
-   rate_limit_burst: 200
-
-   # Message Settings
-   message_ttl_seconds: 3600
-
-   # Certificate Cache
-   cert_cache_size: 100
-   cert_cache_ttl_seconds: 3600
+   # connection-profile.yaml
+   name: "my-network"
+   version: "1.0"
+   client:
+     organization: "Org1"
+     connection:
+       timeout:
+         peer:
+           endorser: 300
+         orderer:
+           deliver: 300
+   channels:
+     mychannel:
+       peers:
+         peer0.org1.example.com: {}
 
 |
 
----------------
+|
+
+----
+
+|
+
+.. _installation-troubleshooting:
+
+===============
 Troubleshooting
----------------
+===============
 
 |
 
-Installation Issues
-~~~~~~~~~~~~~~~~~~
+.. _installation-error-import:
+
+Import Errors
+-------------
 
 |
 
-.. list-table::
-   :header-rows: 1
-
-   * - Issue
-     - Solution
-   * - ``ImportError: No module named wFabricSecurity``
-     - Run ``pip install -e .`` in the project root
-   * - ``Permission denied``
-     - Use ``pip install --user`` or virtual environment
-   * - ``cryptography`` module not found
-     - Run ``pip install cryptography``
+If you encounter import errors:
 
 |
 
-Fabric Issues
-~~~~~~~~~~~~~
+.. code-block:: bash
+
+   # Upgrade pip
+   pip install --upgrade pip
+
+   # Reinstall wFabricSecurity
+   pip uninstall wFabricSecurity
+   pip install wFabricSecurity
+
+   # Check installed packages
+   pip list | grep -i fabric
 
 |
 
-.. list-table::
-   :header-rows: 1
+|
 
-   * - Issue
-     - Solution
-   * - Docker containers not starting
-     - Run ``docker system prune`` and restart
-   * - Connection refused
-     - Verify Fabric network is running with ``docker ps``
-   * - Certificate errors
-     - Regenerate certificates with ``make clean && make setup``
+.. _installation-error-cryptography:
+
+Cryptography Errors
+-------------------
+
+|
+
+If cryptography-related errors occur:
+
+|
+
+.. code-block:: bash
+
+   # Upgrade cryptography
+   pip install --upgrade cryptography
+
+   # Install build tools (Linux)
+   sudo apt-get install build-essential python3-dev libssl-dev
+
+   # Reinstall
+   pip uninstall cryptography wFabricSecurity
+   pip install wFabricSecurity
+
+|
+
+|
+
+.. _installation-error-permissions:
+
+Permission Errors
+------------------
+
+|
+
+On Linux/macOS, you may need:
+
+|
+
+.. code-block:: bash
+
+   # Fix pip permissions
+   pip install --user wFabricSecurity
+
+   # Or use a virtual environment
+   python -m venv env
+   source env/bin/activate
+   pip install wFabricSecurity
+
+|
+
+|
+
+----
+
+|
+
+.. _installation-uninstall:
+
+===============
+Uninstallation
+===============
+
+|
+
+To remove wFabricSecurity:
+
+|
+
+.. code-block:: bash
+
+   # Uninstall via pip
+   pip uninstall wFabricSecurity
+
+   # Remove virtual environment (if created)
+   rm -rf wfabric-env
+
+|
+
+|
+
+----
+
+|
+
+.. seealso::
+
+   * :ref:`getting_started` - Quick start guide
+   * :ref:`tutorials` - Step-by-step tutorials
+   * :ref:`api_reference` - API documentation

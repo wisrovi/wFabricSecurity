@@ -509,6 +509,45 @@
         .author-link.project { border-left: 4px solid var(--primary); }
         .author-link.github { border-left: 4px solid #333; }
         .author-link.linkedin { border-left: 4px solid #0077b5; }
+        
+        .docs-banner {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 25px 40px;
+            border-radius: 15px;
+            margin: 30px 0;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .docs-banner h3 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+        
+        .docs-banner p {
+            color: rgba(255,255,255,0.95);
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .docs-banner .btn {
+            display: inline-block;
+            background: white;
+            color: #11998e;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .docs-banner .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
@@ -518,6 +557,12 @@
             <h2>🛡️ wFabricSecurity</h2>
             <p>
                 <strong>Zero Trust Security System for Hyperledger Fabric</strong>
+            </p>
+            <p style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 20px; border-radius: 10px; margin: 20px 0;">
+                <strong>📚 Official Documentation:</strong> 
+                <a href="https://wFabricSecurity.readthedocs.io/en/latest/" style="color: white; text-decoration: underline;" target="_blank">
+                    https://wFabricSecurity.readthedocs.io/en/latest/
+                </a>
             </p>
             <p>
                 A comprehensive distributed cryptographic security library that provides identity verification, 
@@ -578,6 +623,26 @@
             
             <a href="https://github.com/wisrovi/wFabricSecurity" class="readme-link" target="_blank">
                 📖 View Complete Documentation (README.md)
+            </a>
+            <a href="https://wFabricSecurity.readthedocs.io/en/latest/" class="readme-link" target="_blank" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                📚 Official Documentation (ReadTheDocs)
+            </a>
+        </div>
+        
+        <!-- Documentation Banner -->
+        <div class="docs-banner">
+            <h3>📚 Official Documentation Available</h3>
+            <p>
+                For comprehensive tutorials, API reference, architecture diagrams, and FAQ,<br>
+                visit the official documentation at:
+            </p>
+            <p style="font-weight: bold; font-size: 1.2em;">
+                <a href="https://wFabricSecurity.readthedocs.io/en/latest/" style="color: white;" target="_blank">
+                    https://wFabricSecurity.readthedocs.io/en/latest/
+                </a>
+            </p>
+            <a href="https://wFabricSecurity.readthedocs.io/en/latest/" class="btn" target="_blank">
+                📖 Open Official Documentation →
             </a>
         </div>
 
@@ -1674,21 +1739,23 @@
 
         <!-- Author Section -->
         <div class="author-section">
-            <h3>👨‍💻 Author</h3>
-            <p style="font-size: 1.2em; color: var(--text-primary);">
-                <strong>William Rodriguez</strong>
-            </p>
+            <h3>William Rodriguez</h3>
+            <p>Research Engineer & Software Architect - eCaptured Technologies</p>
             <div class="author-links">
-                <a href="https://github.com/wisrovi/wFabricSecurity" class="author-link project" target="_blank">
-                    📦 Project Repository
+                <a href="https://wFabricSecurity.readthedocs.io/en/latest/" class="author-link project" target="_blank">
+                    📚 Official Docs
                 </a>
-                <a href="https://github.com/wisrovi" class="author-link github" target="_blank">
-                    🐙 GitHub Profile
+                <a href="https://pypi.org/project/wFabricSecurity/" class="author-link project" target="_blank">
+                    📦 PyPI Package
                 </a>
-                <a href="https://www.linkedin.com/in/wisrovi-rodriguez/" class="author-link linkedin" target="_blank">
+                <a href="https://github.com/wisrovi/wFabricSecurity" class="author-link github" target="_blank">
+                    💻 GitHub
+                </a>
+                <a href="https://es.linkedin.com/in/wisrovi-rodriguez" class="author-link linkedin" target="_blank">
                     💼 LinkedIn
                 </a>
             </div>
+        </div>
         </div>
 
         <!-- Link to README -->
