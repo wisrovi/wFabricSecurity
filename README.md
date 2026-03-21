@@ -5,7 +5,8 @@
 ![Python Version](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 ![Code Quality](https://img.shields.io/badge/Code%20Quality-Pylint%209.29%2F10-yellow.svg)
-![Tests](https://img.shields.io/badge/Tests-228%20passed-brightgreen.svg)
+![Tests](https://img.shields.io/badge/Tests-258%20passed-brightgreen.svg)
+![Coverage](https://img.shields.io/badge/Coverage-85%25-brightgreen.svg)
 
 A comprehensive distributed cryptographic security library providing identity verification, code integrity validation, communication permissions, message integrity, rate limiting, retry mechanisms, and immutable audit trails on Hyperledger Fabric blockchain.
 
@@ -626,17 +627,36 @@ make report
 make view-report
 ```
 
+### Generating Coverage Report
+
+```bash
+# Generate coverage HTML report
+python -m pytest test/test_library.py --cov=wFabricSecurity --cov-report=html
+
+# Open coverage report
+open htmlcov/index.html
+# or
+firefox htmlcov/index.html
+```
+
 ### Test Coverage
 
 | Module | Coverage |
 |--------|----------|
-| config | 98% |
+| config | 94-100% |
 | core | 91-100% |
-| crypto | 72-91% |
-| fabric | 63-78% |
-| security | 64-88% |
-| storage | 69-95% |
-| **Overall** | **84%** |
+| crypto | 75-91% |
+| fabric | 73-95% |
+| security | 78-89% |
+| storage | 77-95% |
+| **Overall** | **85%** |
+
+### Test Reports
+
+| Report | Location | Description |
+|--------|----------|-------------|
+| **Coverage HTML** | `htmlcov/index.html` | Detailed line-by-line coverage analysis |
+| **Test Results** | `test/test_library.py` | 258 unit tests with assertions |
 
 ---
 
