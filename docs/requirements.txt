@@ -1,26 +1,7 @@
 # Documentation dependencies for wFabricSecurity
-# Install with: pip install -r docs/requirements.txt
-
-# Sphinx and themes
 sphinx>=7.0.0
 sphinx_rtd_theme>=2.0.0
-sphinx-autobuild>=2024.0.0
-
-# Sphinx extensions
 sphinx-copybutton>=0.5.0
-sphinx.ext.autodoc>=1.0.0
-sphinx.ext.doctest>=1.0.0
-sphinx.ext.intersphinx>=1.0.0
-sphinx.ext.napoleon>=0.9.0
-sphinx.ext.viewcode>=0.4.0
-sphinx.ext.todo>=0.9.0
+myst-parser>=2.0.0
 sphinx-sitemap>=2.5.0
 sphinx-design>=0.5.0
-
-# Markdown support
-myst-parser>=2.0.0
-myst-nb>=0.17.0
-
-# Additional utilities
-Pygments>=2.16.0
-Jinja2>=3.1.0

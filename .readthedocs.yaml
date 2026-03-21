@@ -11,27 +11,7 @@ build:
 sphinx:
   builder: html
   configuration: docs/source/conf.py
-  fail_on_warning: false
 
 python:
   install:
     - requirements: docs/requirements.txt
-    - method: pip
-      path: .
-  system_packages: false
-
-formats:
-  - pdf
-  - epub
-
-# Submodules settings
-submodules:
-  include: []
-  exclude: [".git"]
-
-# Announcements
-announcements:
-  - >
-    wFabricSecurity v1.0.0 is now available! 
-    See the <a href="https://wFabricSecurity.readthedocs.io/en/latest/changelog.html">changelog</a> 
-    for details.
