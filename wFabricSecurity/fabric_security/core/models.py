@@ -2,9 +2,9 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 
-from .enums import CommunicationDirection, ParticipantStatus, TaskStatus, DataType
+from .enums import CommunicationDirection, DataType, ParticipantStatus, TaskStatus
 
 
 @dataclass
@@ -32,9 +32,11 @@ class Message:
             "signature": self.signature,
             "timestamp": self.timestamp,
             "message_id": self.message_id,
-            "data_type": self.data_type.value
-            if isinstance(self.data_type, DataType)
-            else self.data_type,
+            "data_type": (
+                self.data_type.value
+                if isinstance(self.data_type, DataType)
+                else self.data_type
+            ),
             "expires_at": self.expires_at,
             "metadata": self.metadata,
         }
@@ -93,13 +95,17 @@ class Participant:
             "version": self.version,
             "registered_at": self.registered_at,
             "allowed_communications": self.allowed_communications,
-            "direction": self.direction.value
-            if isinstance(self.direction, CommunicationDirection)
-            else self.direction,
+            "direction": (
+                self.direction.value
+                if isinstance(self.direction, CommunicationDirection)
+                else self.direction
+            ),
             "is_active": self.is_active,
-            "status": self.status.value
-            if isinstance(self.status, ParticipantStatus)
-            else self.status,
+            "status": (
+                self.status.value
+                if isinstance(self.status, ParticipantStatus)
+                else self.status
+            ),
             "revoked_at": self.revoked_at,
             "last_verified": self.last_verified,
             "metadata": self.metadata,
@@ -168,9 +174,11 @@ class Task:
             "hash_b": self.hash_b,
             "master_id": self.master_id,
             "slave_id": self.slave_id,
-            "status": self.status.value
-            if isinstance(self.status, TaskStatus)
-            else self.status,
+            "status": (
+                self.status.value
+                if isinstance(self.status, TaskStatus)
+                else self.status
+            ),
             "created_at": self.created_at,
             "completed_at": self.completed_at,
             "master_signature": self.master_signature,

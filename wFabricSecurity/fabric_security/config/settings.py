@@ -1,11 +1,12 @@
 """Settings management for wFabricSecurity."""
 
-import os
-import yaml
 import logging
-from pathlib import Path
-from typing import Optional, List
+import os
 from dataclasses import dataclass, field
+from pathlib import Path
+from typing import List, Optional
+
+import yaml
 
 from .defaults import Defaults
 

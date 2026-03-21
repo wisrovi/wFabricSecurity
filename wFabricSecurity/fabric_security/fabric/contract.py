@@ -2,7 +2,7 @@
 
 import json
 import logging
-from typing import Any, Optional, List
+from typing import Any, List, Optional
 
 logger = logging.getLogger("FabricSecurity.Contract")
 

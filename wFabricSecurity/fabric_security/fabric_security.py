@@ -9,37 +9,34 @@ This module implements a complete distributed security system with:
 - Immutable audit on Fabric
 """
 
-import os
-import json
-import hashlib
-import functools
 import asyncio
+import functools
+import hashlib
+import json
 import logging
-from typing import Optional, Any, List, Dict
+import os
+from typing import Any, Dict, List, Optional
 
 from .core import (
-    SecurityError,
     CodeIntegrityError,
-    PermissionDeniedError,
+    CommunicationDirection,
+    Message,
     MessageIntegrityError,
-    SignatureError,
+    Participant,
+    PermissionDeniedError,
     RateLimitError,
     RevocationError,
-    CommunicationDirection,
-    Participant,
-    Message,
+    SecurityError,
+    SignatureError,
 )
-from .crypto import HashingService, SigningService, IdentityManager
-from .fabric import FabricGateway as BaseFabricGateway, FabricNetwork, FabricContract
-from .security import (
-    IntegrityVerifier,
-    PermissionManager,
-    MessageManager,
-    RateLimiter,
-    with_retry,
-    master_audit as base_master_audit,
-    slave_verify as base_slave_verify,
-)
+from .crypto import HashingService, IdentityManager, SigningService
+from .fabric import FabricContract
+from .fabric import FabricGateway as BaseFabricGateway
+from .fabric import FabricNetwork
+from .security import IntegrityVerifier, MessageManager, PermissionManager, RateLimiter
+from .security import master_audit as base_master_audit
+from .security import slave_verify as base_slave_verify
+from .security import with_retry
 
 logger = logging.getLogger("FabricSecurity")
 

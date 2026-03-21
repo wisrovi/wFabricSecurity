@@ -1,14 +1,14 @@
 """Identity management for wFabricSecurity."""
 
-import os
 import logging
+import os
+from datetime import datetime, timedelta
+from functools import lru_cache
 from pathlib import Path
 from typing import Optional
-from functools import lru_cache
-from datetime import datetime, timedelta
 
-from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
 from cryptography.x509 import load_pem_x509_certificate
 
 logger = logging.getLogger("FabricSecurity.Identity")

@@ -1,13 +1,13 @@
 """Signing and verification utilities for wFabricSecurity."""
 
-import hmac
 import base64
+import hmac
 import logging
-from typing import Optional, Callable
+from typing import Callable, Optional
 
-from cryptography.hazmat.primitives import serialization, hashes
-from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ec
 
 logger = logging.getLogger("FabricSecurity.Crypto")
 
@@ -87,8 +87,8 @@ class SigningService:
             True if signature is valid
         """
         try:
-            from cryptography.x509 import load_pem_x509_certificate
             from cryptography.hazmat.primitives.asymmetric import ec
+            from cryptography.x509 import load_pem_x509_certificate
 
             cert_pem = public_key_getter(signer_id)
             if cert_pem is None:

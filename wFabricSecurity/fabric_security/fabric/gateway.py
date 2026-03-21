@@ -1,16 +1,16 @@
 """Fabric Gateway for wFabricSecurity."""
 
-import os
 import json
 import logging
+import os
 from pathlib import Path
-from typing import Optional, Any
+from typing import Any, Optional
 
-from ..crypto.identity import IdentityManager
 from ..crypto.hashing import HashingService
+from ..crypto.identity import IdentityManager
 from ..crypto.signing import SigningService
-from ..storage.local import LocalStorage
 from ..storage.fabric_storage import FabricStorage
+from ..storage.local import LocalStorage
 
 logger = logging.getLogger("FabricSecurity.Gateway")
 

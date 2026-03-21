@@ -1,7 +1,7 @@
 """Code integrity verification for wFabricSecurity."""
 
-import traceback
 import logging
+import traceback
 from pathlib import Path
 from typing import List, Optional, Union
 

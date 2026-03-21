@@ -4,8 +4,8 @@ import logging
 from typing import List, Optional, Set
 
 from ..core.enums import CommunicationDirection, ParticipantStatus
-from ..core.models import Participant
 from ..core.exceptions import PermissionDeniedError, RevocationError
+from ..core.models import Participant
 
 logger = logging.getLogger("FabricSecurity.Permissions")
 

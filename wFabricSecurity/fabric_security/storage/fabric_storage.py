@@ -3,8 +3,8 @@
 import json
 import logging
 import subprocess
-from typing import Any, Optional, List, Tuple
 from pathlib import Path
+from typing import Any, List, Optional, Tuple
 
 logger = logging.getLogger("FabricSecurity.FabricStorage")
 

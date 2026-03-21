@@ -1,9 +1,9 @@
 """Retry logic for wFabricSecurity."""
 
-import time
 import functools
 import logging
-from typing import Callable, Type, Tuple, Optional, Any
+import time
+from typing import Any, Callable, Optional, Tuple, Type
 
 logger = logging.getLogger("FabricSecurity.Retry")
 

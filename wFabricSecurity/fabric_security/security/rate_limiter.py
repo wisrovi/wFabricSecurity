@@ -1,10 +1,10 @@
 """Rate limiting for wFabricSecurity."""
 
-import time
-import threading
 import logging
-from typing import Optional
+import threading
+import time
 from collections import deque
+from typing import Optional
 
 from ..core.exceptions import RateLimitError
 
