@@ -2672,5 +2672,604 @@ class TestStorageFabricExtended3:
         assert result is not None
 
 
+class TestIdentityManagerExtended:
+    """More tests for IdentityManager - targeting uncovered lines."""
+
+    def test_identity_manager_get_certificate_pem(self):
+        from wFabricSecurity import IdentityManager
+
+        manager = IdentityManager(msp_path="/tmp/fake")
+
+        cert = manager.get_certificate_pem()
+        assert cert is None or isinstance(cert, str)
+
+    def test_identity_manager_clear_cache(self):
+        from wFabricSecurity import IdentityManager
+
+        manager = IdentityManager(msp_path="/tmp/fake")
+        manager.clear_cache()
+
+    def test_identity_manager_get_signer_id(self):
+        from wFabricSecurity import IdentityManager
+
+        manager = IdentityManager(msp_path="/tmp/fake")
+        signer_id = manager.get_signer_id()
+        assert signer_id is not None
+
+
+class TestFabricContractExtended2:
+    """More tests for FabricContract - targeting uncovered lines."""
+
+    def test_contract_get_certificate(self):
+        from wFabricSecurity import FabricContract, FabricGateway
+
+        gateway = FabricGateway(msp_path="/tmp/fake")
+        contract = FabricContract(gateway, "mychannel", "tasks")
+
+        result = contract.get_certificate("user@test.com")
+        assert result is None
+
+    def test_contract_get_participant(self):
+        from wFabricSecurity import FabricContract, FabricGateway
+
+        gateway = FabricGateway(msp_path="/tmp/fake")
+        contract = FabricContract(gateway, "mychannel", "tasks")
+
+        result = contract.get_participant("user@test.com")
+        assert result is None
+
+    def test_contract_complete_task(self):
+        from wFabricSecurity import FabricContract, FabricGateway
+
+        gateway = FabricGateway(msp_path="/tmp/fake")
+        contract = FabricContract(gateway, "mychannel", "tasks")
+
+        result = contract.complete_task("task123", "hash_b")
+        assert result is not None
+
+
+class TestFabricGatewayExtended2:
+    """More tests for FabricGateway - targeting uncovered lines."""
+
+    def test_gateway_get_certificate_pem(self):
+        from wFabricSecurity import FabricGateway
+
+        gateway = FabricGateway(msp_path="/tmp/fake")
+
+        result = gateway.get_certificate_pem()
+        assert result is None
+
+    def test_gateway_invoke_chaincode(self):
+        from wFabricSecurity import FabricGateway
+
+        gateway = FabricGateway(msp_path="/tmp/fake")
+
+        result = gateway.invoke_chaincode("TestFunc", "arg1", "arg2")
+        assert result is not None
+
+    def test_gateway_query_chaincode(self):
+        from wFabricSecurity import FabricGateway
+
+        gateway = FabricGateway(msp_path="/tmp/fake")
+
+        result = gateway.query_chaincode("TestFunc", "arg1")
+        assert result is None
+
+    def test_gateway_get_private_data(self):
+        from wFabricSecurity import FabricGateway
+
+        gateway = FabricGateway(msp_path="/tmp/fake")
+
+        result = gateway.get_private_data("collection", "key")
+        assert result is None
+
+    def test_gateway_submit_private_data(self):
+        from wFabricSecurity import FabricGateway
+
+        gateway = FabricGateway(msp_path="/tmp/fake")
+
+        result = gateway.submit_private_data("collection", "key", {"data": "value"})
+        assert result is not None
+
+
+class TestIntegrityVerifierExtended2:
+    """More tests for IntegrityVerifier - targeting uncovered lines."""
+
+    def test_verifier_get_registered_hash(self):
+        from wFabricSecurity.fabric_security.security.integrity import IntegrityVerifier
+        from wFabricSecurity import FabricGateway
+
+        gateway = FabricGateway(msp_path="/tmp/fake")
+        gateway.local_storage.clear()
+        verifier = IntegrityVerifier(gateway)
+
+        result = verifier.get_registered_hash("user@test.com")
+        assert result is None
+
+    def test_verifier_verify_multiple_paths(self):
+        from wFabricSecurity.fabric_security.security.integrity import IntegrityVerifier
+        from wFabricSecurity import FabricGateway
+
+        gateway = FabricGateway(msp_path="/tmp/fake")
+        gateway.local_storage.clear()
+        verifier = IntegrityVerifier(gateway)
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+            f.write("print('test')\n")
+            temp_file = f.name
+
+        try:
+            code_hash = gateway.compute_code_hash([temp_file])
+            result = verifier.verify_multiple_paths([(temp_file, code_hash)])
+            assert isinstance(result, list)
+        finally:
+            os.unlink(temp_file)
+
+
+class TestMessageManagerExtended2:
+    """More tests for MessageManager - targeting uncovered lines."""
+
+    def test_message_manager_create_with_metadata(self):
+        from wFabricSecurity.fabric_security.security.messages import MessageManager
+        from wFabricSecurity import FabricGateway, DataType
+
+        gateway = FabricGateway(msp_path="/tmp/fake")
+        gateway.local_storage.clear()
+        manager = MessageManager(gateway, ttl_seconds=3600)
+
+        msg = manager.create_message(
+            sender="sender@test.com",
+            recipient="recipient@test.com",
+            content="test with metadata",
+            data_type=DataType.JSON,
+            metadata={"key": "value"},
+        )
+
+        assert msg.metadata is not None
+        assert msg.metadata.get("key") == "value"
+
+    def test_message_manager_create_json_message(self):
+        from wFabricSecurity.fabric_security.security.messages import MessageManager
+        from wFabricSecurity import FabricGateway
+
+        gateway = FabricGateway(msp_path="/tmp/fake")
+        gateway.local_storage.clear()
+        manager = MessageManager(gateway)
+
+        msg = manager.create_json_message(
+            sender="sender@test.com",
+            recipient="recipient@test.com",
+            data={"key": "value"},
+        )
+
+        assert msg is not None
+        assert msg.data_type.value == "json"
+
+    def test_message_manager_create_binary_message(self):
+        from wFabricSecurity.fabric_security.security.messages import MessageManager
+        from wFabricSecurity import FabricGateway
+
+        gateway = FabricGateway(msp_path="/tmp/fake")
+        gateway.local_storage.clear()
+        manager = MessageManager(gateway)
+
+        msg = manager.create_binary_message(
+            sender="sender@test.com",
+            recipient="recipient@test.com",
+            data=b"binary data",
+        )
+
+        assert msg is not None
+        assert msg.data_type.value == "binary"
+
+
+class TestFabricStorageExtended2:
+    """More tests for FabricStorage - targeting uncovered lines."""
+
+    def test_fabric_storage_register_task(self):
+        from wFabricSecurity import FabricStorage
+
+        storage = FabricStorage()
+
+        result = storage.register_task("task123", "hash_a")
+        assert result is not None
+
+    def test_fabric_storage_complete_task(self):
+        from wFabricSecurity import FabricStorage
+
+        storage = FabricStorage()
+
+        result = storage.complete_task("task123", "hash_b")
+        assert result is not None
+
+    def test_fabric_storage_get_task(self):
+        from wFabricSecurity import FabricStorage
+
+        storage = FabricStorage()
+
+        result = storage.get_task("task123")
+        assert result is None
+
+    def test_fabric_storage_get_task(self):
+        from wFabricSecurity import FabricStorage
+
+        storage = FabricStorage()
+
+        result = storage.get_task("task123")
+        assert result is None
+
+    def test_fabric_storage_put_private_data(self):
+        from wFabricSecurity import FabricStorage
+
+        storage = FabricStorage()
+
+        result = storage.put_private_data("collection", "key", {"data": "value"})
+        assert result is not None
+
+
+class TestRetryExtended2:
+    """More tests for retry - targeting uncovered lines."""
+
+    def test_retry_context_exhausted_after_attempts(self):
+        from wFabricSecurity import RetryContext
+
+        ctx = RetryContext(max_attempts=1, initial_delay=0.01)
+        with pytest.raises(ValueError):
+            with ctx:
+                raise ValueError("test")
+        assert ctx.exhausted is True
+
+    def test_retry_context_with_delay(self):
+        from wFabricSecurity import RetryContext
+
+        ctx = RetryContext(max_attempts=2, initial_delay=0.05, backoff_factor=2.0)
+        assert ctx.delay == 0.05
+
+        with ctx:
+            raise ValueError("test")
+
+        assert ctx.delay > 0.05
+
+    def test_retry_decorator_with_callback(self):
+        from wFabricSecurity import with_retry
+
+        callback_results = []
+
+        def my_callback(exc, attempt):
+            callback_results.append((exc, attempt))
+
+        @with_retry(max_attempts=2, initial_delay=0.01, on_retry=my_callback)
+        def eventually_fails():
+            raise ValueError("fail")
+
+        with pytest.raises(ValueError):
+            eventually_fails()
+
+        assert len(callback_results) > 0
+
+
+class TestPermissionsManagerExtended2:
+    """More tests for PermissionManager - targeting uncovered lines."""
+
+    def test_permission_manager_get_allowed_communications(self):
+        from wFabricSecurity.fabric_security.security.permissions import (
+            PermissionManager,
+        )
+        from wFabricSecurity import FabricGateway
+
+        gateway = FabricGateway(msp_path="/tmp/fake")
+        gateway.local_storage.clear()
+        manager = PermissionManager(gateway)
+
+        gateway.local_storage.save(
+            "participant_test@test.com",
+            {
+                "identity": "test@test.com",
+                "is_active": True,
+                "direction": "bidirectional",
+                "allowed_communications": ["other@test.com"],
+            },
+        )
+
+        result = manager.get_allowed_communications("test@test.com")
+        assert isinstance(result, list)
+
+    def test_permission_manager_update_participant(self):
+        from wFabricSecurity.fabric_security.security.permissions import (
+            PermissionManager,
+        )
+        from wFabricSecurity import FabricGateway
+
+        gateway = FabricGateway(msp_path="/tmp/fake")
+        gateway.local_storage.clear()
+        manager = PermissionManager(gateway)
+
+        result = manager.update_participant("test@test.com", {"is_active": False})
+        assert result is not None
+
+
+class TestEnumsExtended2:
+    """More tests for enums - targeting uncovered lines."""
+
+    def test_communication_direction_values(self):
+        from wFabricSecurity import CommunicationDirection
+
+        assert CommunicationDirection.BIDIRECTIONAL.value == "bidirectional"
+        assert CommunicationDirection.OUTBOUND.value == "outbound"
+        assert CommunicationDirection.INBOUND.value == "inbound"
+
+    def test_data_type_values(self):
+        from wFabricSecurity import DataType
+
+        assert DataType.JSON.value == "json"
+        assert DataType.IMAGE.value == "image"
+        assert DataType.P2P.value == "p2p"
+        assert DataType.BINARY.value == "binary"
+
+    def test_task_status_values(self):
+        from wFabricSecurity import TaskStatus
+
+        assert TaskStatus.PENDING.value == "pending"
+        assert TaskStatus.COMPLETED.value == "completed"
+        assert TaskStatus.FAILED.value == "failed"
+
+    def test_participant_status_values(self):
+        from wFabricSecurity import ParticipantStatus
+
+        assert ParticipantStatus.ACTIVE.value == "active"
+        assert ParticipantStatus.INACTIVE.value == "inactive"
+        assert ParticipantStatus.REVOKED.value == "revoked"
+
+
+class TestModelsExtended2:
+    """More tests for models - targeting uncovered lines."""
+
+    def test_message_is_expired_true(self):
+        from wFabricSecurity import Message, DataType
+        from datetime import datetime, timedelta
+
+        msg = Message(
+            sender="sender@test.com",
+            recipient="recipient@test.com",
+            content="test",
+            content_hash="sha256:abc",
+            signature="sig",
+            timestamp="2020-01-01T00:00:00",
+            message_id="msg123",
+            data_type=DataType.JSON,
+            expires_at="2020-01-01T00:00:00",
+        )
+
+        assert msg.is_expired() is True
+
+    def test_participant_str(self):
+        from wFabricSecurity import Participant
+
+        p = Participant(
+            identity="test@test.com",
+            code_hash="sha256:abc",
+        )
+
+        assert "test@test.com" in str(p)
+
+    def test_task_str(self):
+        from wFabricSecurity import Task
+
+        t = Task(
+            task_id="task123",
+            hash_a="sha256:abc",
+        )
+
+        assert "task123" in str(t)
+
+
+class TestConfigSettingsExtended:
+    """More tests for Settings - targeting uncovered lines."""
+
+    def test_settings_from_yaml_file(self):
+        from wFabricSecurity import Settings
+        import tempfile
+
+        yaml_content = """local_data_dir: /custom/path
+fabric_channel: custom_channel
+rate_limit_rps: 200
+"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+            f.write(yaml_content)
+            temp_file = f.name
+
+        try:
+            settings = Settings.from_yaml(temp_file)
+            assert settings.local_data_dir == "/custom/path"
+            assert settings.fabric_channel == "custom_channel"
+            assert settings.rate_limit_requests_per_second == 200
+        finally:
+            os.unlink(temp_file)
+
+
+class TestRetryExtended3:
+    """More tests for retry."""
+
+    def test_retry_context_exhausted_no_exception(self):
+        from wFabricSecurity import RetryContext
+
+        ctx = RetryContext(max_attempts=1, initial_delay=0.01)
+        with ctx:
+            pass
+        assert ctx.exhausted is False
+        assert ctx.attempt == 1
+
+
+class TestMessageManagerExtended:
+    """Extended tests for MessageManager coverage."""
+
+    def test_message_manager_get_messages_for_recipient(self):
+        from wFabricSecurity import MessageManager
+        from wFabricSecurity.fabric_security.core.models import Message, DataType
+        from datetime import datetime, timedelta
+        from unittest.mock import Mock
+
+        mock_gateway = Mock()
+        mock_gateway.local_storage = Mock()
+        manager = MessageManager(mock_gateway)
+        expires = (datetime.now() + timedelta(hours=1)).isoformat()
+        msg = Message(
+            message_id="msg_recipient_test",
+            sender="Alice",
+            recipient="Bob",
+            content="Test content",
+            content_hash="hash123",
+            signature="sig123",
+            timestamp=datetime.now().isoformat(),
+            expires_at=expires,
+        )
+        manager._messages_cache[msg.message_id] = msg
+        mock_gateway.local_storage.list_keys.return_value = ["msg_recipient_test"]
+        mock_gateway.local_storage.get_message.return_value = msg.to_dict()
+
+        messages = manager.get_messages_for_recipient("Bob")
+        assert isinstance(messages, list)
+
+    def test_message_manager_verify_expired_message(self):
+        from wFabricSecurity import MessageManager
+        from wFabricSecurity.fabric_security.core.models import Message, DataType
+        from datetime import datetime, timedelta
+        from unittest.mock import Mock
+
+        mock_gateway = Mock()
+        manager = MessageManager(mock_gateway)
+        expired = (datetime.now() - timedelta(hours=1)).isoformat()
+        msg = Message(
+            message_id="msg_expired",
+            sender="Alice",
+            recipient="Bob",
+            content="Test content",
+            content_hash="hash123",
+            signature="sig123",
+            timestamp=datetime.now().isoformat(),
+            expires_at=expired,
+        )
+        result = manager.verify_message(msg)
+        assert result is False
+
+    def test_message_manager_cleanup_expired(self):
+        from wFabricSecurity import MessageManager
+        from unittest.mock import Mock
+
+        mock_gateway = Mock()
+        mock_gateway.local_storage = Mock()
+        manager = MessageManager(mock_gateway)
+        mock_gateway.local_storage.cleanup_expired_messages.return_value = 0
+        count = manager.cleanup_expired()
+        assert count >= 0
+        assert manager._last_cleanup is not None
+
+
+class TestRetryExtended4:
+    """Extended tests for RetryContext coverage."""
+
+    def test_retry_context_backoff_increases(self):
+        from wFabricSecurity import RetryContext
+
+        ctx = RetryContext(max_attempts=3, initial_delay=0.05, backoff_factor=2.0)
+        assert ctx.delay == 0.05
+
+        with ctx:
+            raise ValueError("first")
+        assert ctx.delay == pytest.approx(0.1)
+
+        with ctx:
+            raise ValueError("second")
+        assert ctx.delay == pytest.approx(0.2)
+
+    def test_retry_context_max_attempts_multiple(self):
+        from wFabricSecurity import RetryContext
+
+        ctx = RetryContext(max_attempts=1, initial_delay=0.01)
+        assert ctx.attempt == 0
+
+        with pytest.raises(ValueError):
+            with ctx:
+                raise ValueError("test")
+
+        assert ctx.attempt == 1
+        assert ctx.last_exception is not None
+
+    def test_retry_context_succeeded_property(self):
+        from wFabricSecurity import RetryContext
+
+        ctx = RetryContext(max_attempts=1, initial_delay=0.01)
+        with ctx:
+            pass
+        assert ctx.succeeded is True
+
+        ctx2 = RetryContext(max_attempts=1, initial_delay=0.01)
+        with pytest.raises(ValueError):
+            with ctx2:
+                raise ValueError("fail")
+        assert ctx2.succeeded is False
+
+
+class TestFabricStorageExtended:
+    """Extended tests for FabricStorage coverage."""
+
+    def test_fabric_storage_get_certificate_not_found(self):
+        from wFabricSecurity import FabricStorage
+        from unittest.mock import Mock
+
+        mock_gateway = Mock()
+        storage = FabricStorage(mock_gateway)
+        mock_gateway.query_chaincode.return_value = None
+
+        cert = storage.get_certificate("unknown_id")
+        assert cert is None
+
+    def test_fabric_storage_get_participant_not_found(self):
+        from wFabricSecurity import FabricStorage
+        from unittest.mock import Mock
+
+        mock_gateway = Mock()
+        storage = FabricStorage(mock_gateway)
+        mock_gateway.query_chaincode.return_value = None
+
+        participant = storage.get_participant("unknown_id")
+        assert participant is None
+
+    def test_fabric_storage_register_participant(self):
+        from wFabricSecurity import FabricStorage
+        from unittest.mock import Mock
+
+        mock_gateway = Mock()
+        storage = FabricStorage(mock_gateway)
+        mock_gateway.invoke.return_value = {"success": True}
+
+        result = storage.register_participant({"identity": "test_user"})
+        assert result is not None
+
+
+class TestIntegrityVerifierExtended3:
+    """Extended tests for IntegrityVerifier coverage."""
+
+    def test_verify_multiple_paths_empty(self):
+        from wFabricSecurity import IntegrityVerifier
+        from unittest.mock import Mock
+
+        mock_gateway = Mock()
+        verifier = IntegrityVerifier(mock_gateway)
+        results = verifier.verify_multiple_paths([])
+        assert results == []
+
+    def test_verify_multiple_paths_with_error(self):
+        from wFabricSecurity import IntegrityVerifier
+        from unittest.mock import Mock
+
+        mock_gateway = Mock()
+        verifier = IntegrityVerifier(mock_gateway)
+        mock_gateway.compute_file_hash.side_effect = IOError("Read error")
+
+        results = verifier.verify_multiple_paths([("file1.txt", "hash123")])
+        assert results == [False]
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

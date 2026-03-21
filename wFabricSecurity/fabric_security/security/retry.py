@@ -128,6 +128,7 @@ class RetryContext:
         self.attempt = 0
         self.last_exception = None
         self.delay = initial_delay
+        self._exhausted = False
 
     def __enter__(self) -> "RetryContext":
         self.attempt += 1
@@ -135,6 +136,7 @@ class RetryContext:
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
         if exc_type is None:
+            self._exhausted = False
             return True
 
         if issubclass(exc_type, self.exceptions):
@@ -146,11 +148,13 @@ class RetryContext:
                 time.sleep(self.delay)
                 self.delay *= self.backoff_factor
                 return True
+            self._exhausted = True
 
         if exc_val is not None:
             logger.error(
                 f"[Retry] All {self.max_attempts} attempts failed or non-retryable exception"
             )
+            self._exhausted = True
         return False
 
     @property
@@ -161,4 +165,4 @@ class RetryContext:
     @property
     def exhausted(self) -> bool:
         """Check if all attempts were exhausted."""
-        return self.attempt >= self.max_attempts
+        return self._exhausted
