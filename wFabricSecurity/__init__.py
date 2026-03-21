@@ -50,6 +50,10 @@ from .fabric_security.security import (
 
 from .fabric_security.config import Settings, get_settings
 
+from .fabric_security.storage import LocalStorage, FabricStorage
+
+from .fabric_security.security.retry import RetryContext
+
 __version__ = "1.0.0"
 
 __all__ = [
@@ -86,4 +90,7 @@ __all__ = [
     "slave_verify",
     "Settings",
     "get_settings",
+    "LocalStorage",
+    "FabricStorage",
+    "RetryContext",
 ]

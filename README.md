@@ -12,6 +12,10 @@ Librería Python que implementa un sistema completo de auditoría criptográfica
 - 📝 **Integridad de Mensajes**: Verificación de que los datos no fueron alterados
 - 📦 **Tipos de Datos**: JSON, Imágenes, Datos sensibles P2P, Archivos
 - 🏢 **Participantes**: Gestión de identidades con certificados X.509
+- ⚡ **Rate Limiting**: Protección contra ataques DoS con token bucket
+- 🔄 **Retry Logic**: Reintentos automáticos con exponential backoff
+- 💾 **Certificate Caching**: Cache LRU con TTL para certificados
+- ⚙️ **Configuración Flexible**: YAML o variables de entorno
 
 ## Arquitectura Zero Trust
 
@@ -70,17 +74,18 @@ wFabricSecurity/fabric_security/
 ├── config/
 │   ├── __init__.py
 │   ├── settings.py                # Configuración centralizada
-│   └── defaults.py               # Valores por defecto
+│   ├── defaults.py               # Valores por defecto
+│   └── config.yaml              # Ejemplo de configuración
 ├── core/
 │   ├── __init__.py
-│   ├── exceptions.py              # Todas las excepciones
+│   ├── exceptions.py              # Todas las excepciones (8 tipos)
 │   ├── models.py                  # Message, Participant, Task
 │   └── enums.py                  # CommunicationDirection, DataType, etc.
 ├── crypto/
 │   ├── __init__.py
 │   ├── hashing.py                 # HashingService
 │   ├── signing.py                 # SigningService (ECDSA)
-│   └── identity.py                # IdentityManager (certificados)
+│   └── identity.py                # IdentityManager (certificados con cache)
 ├── fabric/
 │   ├── __init__.py
 │   ├── gateway.py                 # FabricGateway
@@ -90,10 +95,10 @@ wFabricSecurity/fabric_security/
 │   ├── __init__.py
 │   ├── integrity.py               # IntegrityVerifier
 │   ├── permissions.py            # PermissionManager
-│   ├── messages.py               # MessageManager
+│   ├── messages.py               # MessageManager (con TTL)
 │   ├── decorators.py             # @master_audit, @slave_verify
-│   ├── rate_limiter.py          # RateLimiter (DoS protection)
-│   └── retry.py                  # @with_retry (retry logic)
+│   ├── rate_limiter.py           # RateLimiter (token bucket)
+│   └── retry.py                  # @with_retry, RetryContext
 ├── storage/
 │   ├── __init__.py
 │   ├── local.py                  # LocalStorage (fallback)
@@ -111,7 +116,7 @@ wFabricSecurity/fabric_security/
 | `fabric` | Comunicación con Hyperledger Fabric |
 | `security` | Verificación de integridad, permisos, rate limiting |
 | `storage` | Almacenamiento local y en Fabric |
-| `config` | Configuración centralizada |
+| `config` | Configuración centralizada (YAML + env vars) |
 
 ## Mejoras Implementadas
 
@@ -242,7 +247,7 @@ cd examples
 make test
 
 # Tests específicos
-make test-core          # Tests de librería core
+make test-core          # Tests de librería core (228 tests)
 make test-json         # Tests de JSON
 make test-image        # Tests de imágenes
 make test-p2p          # Tests P2P
@@ -261,11 +266,14 @@ Genera reportes profesionales en HTML con:
 - 🔐 Detalle de cada funcionalidad validada
 - 📦 Tipos de datos soportados
 - 📈 Gráfico visual de distribución
+- 🎨 Diseño profesional con modo oscuro
 
 ```bash
 make report          # Generar reporte
 make view-report     # Ver último reporte
 ```
+
+Los reportes se guardan en: `examples/test/reports/test_report_YYYYMMDD_HHMMSS.html`
 
 ## Estructura del Proyecto
 
@@ -273,8 +281,15 @@ make view-report     # Ver último reporte
 wFabricSecurity/
 ├── wFabricSecurity/           # Paquete Python
 │   └── fabric_security/      # Módulo principal
+│       ├── config/          # Configuración
+│       ├── core/            # Excepciones, modelos, enums
+│       ├── crypto/          # Criptografía
+│       ├── fabric/          # Comunicación Fabric
+│       ├── security/        # Seguridad
+│       ├── storage/         # Almacenamiento
 │       └── fabric_security.py # Sistema Zero Trust
-├── examples/                  # Ejemplos funcionales
+├── test/                     # Tests de librería (228 tests)
+├── examples/                 # Ejemplos funcionales
 │   ├── json/                 # Ejemplos JSON
 │   ├── image/                # Ejemplos de imágenes
 │   ├── p2p/                 # Ejemplos P2P
@@ -287,7 +302,7 @@ wFabricSecurity/
 ├── enviroment/               # Hyperledger Fabric
 │   ├── docker-compose.yaml   # Servicios Docker
 │   ├── chaincode/            # Chaincode Go
-│   └── organizations/         # Certificados
+│   └── organizations/        # Certificados
 ├── README.md                 # Este archivo
 └── requirements.txt          # Dependencias
 ```
@@ -305,6 +320,8 @@ Representa un participante con identidad, code_hash, versión y permisos.
 - `PermissionDeniedError`: Sin permiso de comunicación
 - `MessageIntegrityError`: El mensaje fue alterado
 - `SignatureError`: La firma es inválida
+- `RateLimitError`: Se excedió el rate limit
+- `RevocationError`: Participante revocado
 
 ## Configuración
 
@@ -314,6 +331,20 @@ Representa un participante con identidad, code_hash, versión y permisos.
 export FABRIC_PEER_URL=localhost:7051
 export FABRIC_MSP_PATH=/path/to/msp
 export FABRIC_MSP_PATH=/path/to/users/Admin@org1.net/msp
+```
+
+### config.yaml
+
+```yaml
+local_data_dir: /tmp/fabric_security_data
+fabric_channel: mychannel
+fabric_chaincode: tasks
+retry_max_attempts: 3
+rate_limit_requests_per_second: 100
+rate_limit_burst: 200
+message_ttl_seconds: 3600
+cert_cache_size: 100
+cert_cache_ttl_seconds: 3600
 ```
 
 ### MSP (Membership Service Provider)
@@ -342,8 +373,15 @@ make status      # Ver estado de la red
 ## Documentación Adicional
 
 - [README de Examples](examples/README.md) - Documentación detallada de ejemplos
-- [Tests](examples/test/) - Suite completa de tests automatizados
+- [Tests](examples/test/) - Suite completa de tests automatizados (228 tests)
 - [Reportes](examples/test/reports/) - Reportes HTML de tests
+
+## Cobertura de Tests
+
+```
+test/test_library.py          # 228 tests - 84% cobertura
+examples/test/               # 96 tests - ejemplos funcionales
+```
 
 ## Licencia
 

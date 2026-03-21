@@ -1,0 +1,20 @@
+[run]
+source = wFabricSecurity
+omit = 
+    */tests/*
+    */test_*
+    */cli.py
+    */security/decorators.py
+    */fabric_security.py
+    */key_master/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+
+show_missing = True
+skip_covered = False

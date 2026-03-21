@@ -147,6 +147,10 @@ class RetryContext:
                 self.delay *= self.backoff_factor
                 return True
 
+        if exc_val is not None:
+            logger.error(
+                f"[Retry] All {self.max_attempts} attempts failed or non-retryable exception"
+            )
         return False
 
     @property

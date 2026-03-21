@@ -274,9 +274,27 @@ class FabricGateway:
         self._local_storage.save(f"cert_{signer_id}", {"cert_pem": cert_pem})
         return {"status": "success", "tx_id": "local"}
 
-    def register_participant(self, participant: dict) -> None:
-        """Register a participant."""
-        self._local_storage.save(f"participant_{participant['identity']}", participant)
+    def register_participant(self, participant) -> None:
+        """Register a participant.
+
+        Args:
+            participant: Either a dict or Participant object
+        """
+        if hasattr(participant, "identity"):
+            participant_dict = (
+                participant.to_dict()
+                if hasattr(participant, "to_dict")
+                else {
+                    "identity": participant.identity,
+                    "code_hash": participant.code_hash,
+                    "version": participant.version,
+                }
+            )
+        else:
+            participant_dict = participant
+        self._local_storage.save(
+            f"participant_{participant_dict['identity']}", participant_dict
+        )
 
     def verify_communication_permission(
         self, from_identity: str, to_identity: str
@@ -288,6 +306,40 @@ class FabricGateway:
         if permissions and to_identity in permissions.get("allowed", []):
             return True
         return False
+
+    def verify_message_integrity(self, content: str, content_hash: str) -> bool:
+        """Verify message integrity.
+
+        Args:
+            content: Message content
+            content_hash: Expected hash of content
+
+        Returns:
+            True if hash matches
+        """
+        computed_hash = self.compute_message_hash(content)
+        return computed_hash == content_hash
+
+    def assert_message_integrity(self, content: str, content_hash: str) -> None:
+        """Assert message integrity, raise if mismatch.
+
+        Args:
+            content: Message content
+            content_hash: Expected hash of content
+
+        Raises:
+            MessageIntegrityError: If content hash doesn't match
+        """
+        from ..core.exceptions import MessageIntegrityError
+
+        if not self.verify_message_integrity(content, content_hash):
+            raise MessageIntegrityError(
+                message="Message content has been modified.",
+                details={
+                    "expected_hash": content_hash,
+                    "actual_hash": self.compute_message_hash(content),
+                },
+            )
 
     def submit_private_data(
         self,

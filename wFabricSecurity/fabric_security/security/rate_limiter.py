@@ -189,13 +189,19 @@ class RateLimiter:
         Returns:
             Statistics dictionary
         """
+        cutoff_1s = time.monotonic() - 1.0
+        cutoff_10s = time.monotonic() - 10.0
+
         with self._lock:
+            recent_1s = sum(1 for t in self._request_times if t > cutoff_1s)
+            recent_10s = sum(1 for t in self._request_times if t > cutoff_10s)
+
             return {
                 "available_tokens": self._tokens,
                 "burst_size": self._burst,
                 "requests_per_second": self._rps,
-                "recent_requests_1s": self.get_recent_requests(1.0),
-                "recent_requests_10s": self.get_recent_requests(10.0),
+                "recent_requests_1s": recent_1s,
+                "recent_requests_10s": recent_10s,
                 "is_blocked": self.is_blocked,
                 "blocked_until": self._blocked_until,
             }

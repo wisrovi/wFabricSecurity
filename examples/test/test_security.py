@@ -149,7 +149,7 @@ class TestRetry:
 
     def test_retry_context(self):
         """Test RetryContext."""
-        from wFabricSecurity.security.retry import RetryContext
+        from wFabricSecurity import RetryContext
 
         with RetryContext(max_attempts=3) as ctx:
             pass
@@ -162,14 +162,14 @@ class TestLocalStorage:
 
     def test_local_storage_init(self):
         """Test LocalStorage initialization."""
-        from wFabricSecurity.storage import LocalStorage
+        from wFabricSecurity import LocalStorage
 
         storage = LocalStorage("/tmp/test_fabric_storage")
         assert storage._data_dir.name == "test_fabric_storage"
 
     def test_local_storage_save_get(self):
         """Test LocalStorage.save() and get()."""
-        from wFabricSecurity.storage import LocalStorage
+        from wFabricSecurity import LocalStorage
 
         storage = LocalStorage("/tmp/test_fabric_save")
         storage.save("test_key", {"data": "value"})
@@ -179,7 +179,7 @@ class TestLocalStorage:
 
     def test_local_storage_delete(self):
         """Test LocalStorage.delete()."""
-        from wFabricSecurity.storage import LocalStorage
+        from wFabricSecurity import LocalStorage
 
         storage = LocalStorage("/tmp/test_fabric_delete")
         storage.save("delete_key", {"data": "value"})
@@ -189,7 +189,7 @@ class TestLocalStorage:
 
     def test_local_storage_list_keys(self):
         """Test LocalStorage.list_keys()."""
-        from wFabricSecurity.storage import LocalStorage
+        from wFabricSecurity import LocalStorage
 
         storage = LocalStorage("/tmp/test_fabric_list")
         storage.save("key1", {"data": 1})
@@ -202,7 +202,7 @@ class TestLocalStorage:
 
     def test_local_storage_revoked_participants(self):
         """Test LocalStorage revocation methods."""
-        from wFabricSecurity.storage import LocalStorage
+        from wFabricSecurity import LocalStorage
 
         storage = LocalStorage("/tmp/test_fabric_revoked")
         storage.add_revoked_participant("user@test.com")
@@ -215,7 +215,7 @@ class TestLocalStorage:
 
     def test_local_storage_stats(self):
         """Test LocalStorage.get_stats()."""
-        from wFabricSecurity.storage import LocalStorage
+        from wFabricSecurity import LocalStorage
 
         storage = LocalStorage("/tmp/test_fabric_stats")
         storage.save("key1", {"data": "value"})
@@ -226,7 +226,7 @@ class TestLocalStorage:
 
     def test_local_storage_clear(self):
         """Test LocalStorage.clear()."""
-        from wFabricSecurity.storage import LocalStorage
+        from wFabricSecurity import LocalStorage
 
         storage = LocalStorage("/tmp/test_fabric_clear")
         storage.save("key1", {"data": "value"})
@@ -241,7 +241,7 @@ class TestIdentityManager:
 
     def test_identity_manager_init(self):
         """Test IdentityManager initialization."""
-        from wFabricSecurity.crypto import IdentityManager
+        from wFabricSecurity import IdentityManager
 
         msp_path = os.path.join(
             os.path.dirname(
@@ -261,7 +261,7 @@ class TestIdentityManager:
 
     def test_identity_manager_cache(self):
         """Test IdentityManager certificate caching."""
-        from wFabricSecurity.crypto import IdentityManager
+        from wFabricSecurity import IdentityManager
 
         manager = IdentityManager("/tmp/fake_path")
         manager.cache_certificate("user@test.com", "cert_pem_data")
@@ -271,7 +271,7 @@ class TestIdentityManager:
 
     def test_identity_manager_cache_expired(self):
         """Test IdentityManager cache expiration."""
-        from wFabricSecurity.crypto import IdentityManager
+        from wFabricSecurity import IdentityManager
         import time
 
         manager = IdentityManager("/tmp/fake_path", cache_ttl_seconds=1)

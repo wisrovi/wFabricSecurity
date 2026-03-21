@@ -20,11 +20,12 @@ examples/
 │   └── async/
 ├── test/           # Tests automatizados
 │   ├── conftest.py
-│   ├── test_library.py   # Tests de la librería core
-│   ├── test_json.py
-│   ├── test_image.py
-│   ├── test_p2p.py
-│   └── test_data.py
+│   ├── test_library.py   # Tests de la librería core (228 tests)
+│   ├── test_zero_trust.py # Tests Zero Trust
+│   ├── test_core.py     # Tests de funcionalidades core
+│   ├── test_security.py  # Tests de seguridad
+│   ├── test_report.py   # Generador de reportes HTML
+│   └── reports/        # Reportes HTML generados
 ├── requirements.txt
 └── Makefile
 ```
@@ -163,7 +164,7 @@ python master.py
 
 ## Tests
 
-Los tests verifican que todas las funcionalidades работают correctamente.
+Los tests verifican que todas las funcionalidades funcionan correctamente.
 
 ### Ejecutar todos los tests (core):
 ```bash
@@ -173,7 +174,7 @@ make test
 
 ### Tests específicos:
 ```bash
-make test-core     # Tests de la librería
+make test-core     # Tests de la librería (228 tests)
 make test-json    # Tests de JSON
 make test-image   # Tests de Image
 make test-p2p     # Tests de P2P
@@ -212,7 +213,7 @@ El reporte incluye:
 - 📊 Resumen con estadísticas (pasados, fallidos, omitidos)
 - 📈 Gráfico de distribución de resultados
 - 📋 Detalle de cada test con errores si existen
-- 🎨 Diseño profesional responsive
+- 🎨 Diseño profesional responsive con modo oscuro
 
 ## Configuración
 
@@ -261,6 +262,7 @@ requests       # HTTP síncrono
 httpx          # HTTP asíncrono
 pillow         # Procesamiento de imágenes
 pytest         # Testing
+pytest-html    # Reportes HTML
 ```
 
 Instalar con:
