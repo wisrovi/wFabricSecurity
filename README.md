@@ -62,6 +62,68 @@ cd ..
 pip install -r examples/requirements.txt
 ```
 
+## Arquitectura Modular
+
+```
+wFabricSecurity/fabric_security/
+├── __init__.py                    # Exports públicos
+├── config/
+│   ├── __init__.py
+│   ├── settings.py                # Configuración centralizada
+│   └── defaults.py               # Valores por defecto
+├── core/
+│   ├── __init__.py
+│   ├── exceptions.py              # Todas las excepciones
+│   ├── models.py                  # Message, Participant, Task
+│   └── enums.py                  # CommunicationDirection, DataType, etc.
+├── crypto/
+│   ├── __init__.py
+│   ├── hashing.py                 # HashingService
+│   ├── signing.py                 # SigningService (ECDSA)
+│   └── identity.py                # IdentityManager (certificados)
+├── fabric/
+│   ├── __init__.py
+│   ├── gateway.py                 # FabricGateway
+│   ├── network.py                # FabricNetwork
+│   └── contract.py               # FabricContract
+├── security/
+│   ├── __init__.py
+│   ├── integrity.py               # IntegrityVerifier
+│   ├── permissions.py            # PermissionManager
+│   ├── messages.py               # MessageManager
+│   ├── decorators.py             # @master_audit, @slave_verify
+│   ├── rate_limiter.py          # RateLimiter (DoS protection)
+│   └── retry.py                  # @with_retry (retry logic)
+├── storage/
+│   ├── __init__.py
+│   ├── local.py                  # LocalStorage (fallback)
+│   └── fabric_storage.py         # FabricStorage (blockchain)
+├── cli.py                        # CLI tool
+└── fabric_security.py            # FabricSecurity, FabricSecuritySimple
+```
+
+### Módulos Principales
+
+| Módulo | Descripción |
+|--------|-------------|
+| `core` | Excepciones, modelos de datos, enums |
+| `crypto` | Servicios criptográficos (hash, firma, identidad) |
+| `fabric` | Comunicación con Hyperledger Fabric |
+| `security` | Verificación de integridad, permisos, rate limiting |
+| `storage` | Almacenamiento local y en Fabric |
+| `config` | Configuración centralizada |
+
+## Mejoras Implementadas
+
+- **Type hints** completos en todos los métodos
+- **Retry logic** con exponential backoff (`@with_retry`)
+- **Rate limiting** con token bucket (`RateLimiter`)
+- **Message expiration** con TTL y limpieza automática
+- **Participant revocation** para revocar participantes comprometidos
+- **Certificate caching** con LRU cache y TTL
+- **Configuración** via `config.yaml` o variables de entorno
+- **CLI tool** con comandos: register, verify, send, receive, etc.
+
 ## Uso Básico
 
 ### Sistema Zero Trust Completo

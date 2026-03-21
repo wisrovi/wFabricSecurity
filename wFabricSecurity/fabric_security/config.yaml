@@ -1,0 +1,29 @@
+# wFabricSecurity Configuration
+
+local_data_dir: /tmp/fabric_security_data
+
+fabric_peer_url: localhost:7051
+fabric_orderer_url: orderer.net:7050
+fabric_channel: mychannel
+fabric_chaincode: tasks
+fabric_tls_ca_file: /etc/hyperledger/fabric/msp/tlscacerts/tlsroot.pem
+fabric_tls_enabled: false
+
+msp_path: enviroment/organizations/peerOrganizations/org1.net/users/Admin@org1.net/msp
+
+retry_max_attempts: 3
+retry_backoff_factor: 1.5
+retry_initial_delay: 0.5
+
+rate_limit_rps: 100
+rate_limit_burst: 200
+
+message_ttl: 3600
+message_cleanup_interval: 300
+
+cert_cache_size: 100
+cert_cache_ttl: 3600
+
+log_level: INFO
+
+extra_chaincodes: []
