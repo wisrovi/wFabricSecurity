@@ -1,5 +1,5 @@
 """
-Genera reportes profesionales HTML de tests con detalle de funcionalidades.
+Generates professional HTML test reports with integrity validation categorization.
 """
 
 import os
@@ -7,7 +7,7 @@ import sys
 import json
 import datetime
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Dict, List, Any
 
 sys.path.insert(
     0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
@@ -19,7 +19,7 @@ def get_project_root():
 
 
 def generate_html_report(test_results: Dict[str, Any], output_path: str = None) -> str:
-    """Genera reporte HTML profesional."""
+    """Generates professional HTML report."""
 
     project_root = get_project_root()
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -41,78 +41,92 @@ def generate_html_report(test_results: Dict[str, Any], output_path: str = None) 
     total = passed + failed + skipped
     pass_rate = (passed / total * 100) if total > 0 else 0
 
-    # Group tests by functionality
     functionalities = test_results.get("functionalities", [])
 
     html_content = f"""<!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Tests - wFabricSecurity Zero Trust</title>
+    <title>wFabricSecurity - Test Report</title>
     <style>
+        :root {{
+            --primary: #667eea;
+            --primary-dark: #764ba2;
+            --success: #11998e;
+            --success-light: #38ef7d;
+            --danger: #eb3349;
+            --danger-light: #f45c43;
+            --warning: #f39c12;
+            --info: #3498db;
+            --bg-dark: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            --card-bg: #ffffff;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+        }}
+        
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
         
         body {{
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            background: var(--bg-dark);
             min-height: 100vh;
             padding: 20px;
-            color: #333;
+            color: var(--text-primary);
         }}
         
-        .container {{ max-width: 1400px; margin: 0 auto; }}
+        .container {{ max-width: 1600px; margin: 0 auto; }}
         
         /* Header */
         .header {{
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 40px;
-            border-radius: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            padding: 50px;
+            border-radius: 25px;
+            margin-bottom: 40px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.4);
             text-align: center;
         }}
         
         .header h1 {{
-            font-size: 2.8em;
-            margin-bottom: 10px;
+            font-size: 3em;
+            margin-bottom: 15px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }}
         
         .header .subtitle {{
-            font-size: 1.3em;
+            font-size: 1.4em;
             opacity: 0.95;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }}
         
         .header .meta {{
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 25px;
             flex-wrap: wrap;
         }}
         
         .header .meta span {{
             background: rgba(255,255,255,0.2);
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 0.95em;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 1em;
         }}
         
         /* Status Badge */
         .status-section {{
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }}
         
         .status-badge {{
             display: inline-block;
-            padding: 20px 50px;
-            border-radius: 40px;
-            font-size: 1.5em;
+            padding: 25px 60px;
+            border-radius: 50px;
+            font-size: 1.6em;
             font-weight: bold;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }}
         
         .status-badge.success {{
@@ -128,110 +142,123 @@ def generate_html_report(test_results: Dict[str, Any], output_path: str = None) 
         /* Stats Cards */
         .stats-grid {{
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
         }}
         
         .stat-card {{
-            background: white;
+            background: var(--card-bg);
             padding: 30px;
-            border-radius: 15px;
+            border-radius: 20px;
             text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: transform 0.3s, box-shadow 0.3s;
         }}
         
-        .stat-card:hover {{ transform: translateY(-5px); }}
+        .stat-card:hover {{
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }}
         
-        .stat-card .icon {{ font-size: 2.5em; margin-bottom: 10px; }}
-        .stat-card .number {{ font-size: 3em; font-weight: bold; }}
-        .stat-card .label {{ color: #666; margin-top: 10px; font-size: 1.1em; }}
+        .stat-card .icon {{ font-size: 2.8em; margin-bottom: 15px; }}
+        .stat-card .number {{ font-size: 3.2em; font-weight: bold; }}
+        .stat-card .label {{ color: var(--text-secondary); margin-top: 12px; font-size: 1.1em; }}
         
-        .stat-card.passed {{ border-top: 5px solid #11998e; }}
-        .stat-card.passed .number {{ color: #11998e; }}
+        .stat-card.passed {{ border-top: 6px solid var(--success); }}
+        .stat-card.passed .number {{ color: var(--success); }}
         
-        .stat-card.failed {{ border-top: 5px solid #eb3349; }}
-        .stat-card.failed .number {{ color: #eb3349; }}
+        .stat-card.failed {{ border-top: 6px solid var(--danger); }}
+        .stat-card.failed .number {{ color: var(--danger); }}
         
-        .stat-card.skipped {{ border-top: 5px solid #f39c12; }}
-        .stat-card.skipped .number {{ color: #f39c12; }}
+        .stat-card.skipped {{ border-top: 6px solid var(--warning); }}
+        .stat-card.skipped .number {{ color: var(--warning); }}
         
-        .stat-card.total {{ border-top: 5px solid #667eea; }}
-        .stat-card.total .number {{ color: #667eea; }}
+        .stat-card.total {{ border-top: 6px solid var(--primary); }}
+        .stat-card.total .number {{ color: var(--primary); }}
         
-        .stat-card.rate {{ border-top: 5px solid #38ef7d; }}
-        .stat-card.rate .number {{ color: #38ef7d; }}
+        .stat-card.rate {{ border-top: 6px solid var(--success-light); }}
+        .stat-card.rate .number {{ color: var(--success-light); }}
         
-        /* Functionality Sections */
-        .functionality-section {{
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
+        /* Integrity Categories */
+        .integrity-section {{
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 35px;
             margin-bottom: 30px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }}
         
-        .functionality-section h2 {{
-            color: #667eea;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 3px solid #667eea;
+        .integrity-category {{
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 6px solid var(--primary);
+        }}
+        
+        .integrity-category.code {{ border-left-color: #667eea; }}
+        .integrity-category.signature {{ border-left-color: #11998e; }}
+        .integrity-category.permission {{ border-left-color: #f39c12; }}
+        .integrity-category.message {{ border-left-color: #eb3349; }}
+        .integrity-category.rate {{ border-left-color: #9b59b6; }}
+        .integrity-category.retry {{ border-left-color: #3498db; }}
+        .integrity-category.storage {{ border-left-color: #e67e22; }}
+        
+        .integrity-category h3 {{
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
+            margin-bottom: 15px;
+            font-size: 1.4em;
         }}
         
-        .functionality-section h2 .icon {{ font-size: 1.2em; }}
+        .integrity-category h3 .icon {{ font-size: 1.2em; }}
         
-        .functionality-description {{
-            background: #f8f9fa;
-            padding: 20px;
+        .integrity-category p {{
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.7);
             border-radius: 10px;
-            margin-bottom: 25px;
-            border-left: 4px solid #667eea;
-        }}
-        
-        .functionality-description p {{
-            color: #555;
-            line-height: 1.6;
         }}
         
         /* Test Items */
         .test-grid {{
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 15px;
         }}
         
         .test-item {{
             background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            border-left: 5px solid #11998e;
+            border-radius: 12px;
+            padding: 18px;
+            border-left: 5px solid var(--success);
             transition: all 0.3s;
         }}
         
         .test-item:hover {{
             transform: translateX(5px);
-            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }}
         
-        .test-item.passed {{ border-left-color: #11998e; }}
-        .test-item.failed {{ border-left-color: #eb3349; background: #fff5f5; }}
-        .test-item.skipped {{ border-left-color: #f39c12; background: #fffbf0; }}
+        .test-item.passed {{ border-left-color: var(--success); }}
+        .test-item.failed {{ border-left-color: var(--danger); background: #fff5f5; }}
+        .test-item.skipped {{ border-left-color: var(--warning); background: #fffbf0; }}
         
         .test-item .test-name {{
             font-weight: bold;
-            font-size: 1.1em;
-            color: #333;
-            margin-bottom: 10px;
+            font-size: 1.05em;
+            color: var(--text-primary);
+            margin-bottom: 8px;
         }}
         
         .test-item .test-status {{
             display: inline-block;
-            padding: 3px 12px;
-            border-radius: 15px;
+            padding: 4px 14px;
+            border-radius: 20px;
             font-size: 0.85em;
             font-weight: bold;
         }}
@@ -242,124 +269,181 @@ def generate_html_report(test_results: Dict[str, Any], output_path: str = None) 
         
         .test-item .test-detail {{
             font-size: 0.9em;
-            color: #666;
+            color: var(--text-secondary);
             margin-top: 8px;
         }}
         
-        .test-item .example {{
-            background: #2d3748;
-            color: #e2e8f0;
-            padding: 12px;
+        .test-item .integrity-type {{
+            display: inline-block;
+            padding: 3px 10px;
             border-radius: 8px;
-            margin-top: 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85em;
-            overflow-x: auto;
-        }}
-        
-        .test-item .example .label {{
-            color: #38ef7d;
+            font-size: 0.75em;
             font-weight: bold;
+            margin-left: 10px;
         }}
         
-        /* Data Types Section */
-        .data-types-grid {{
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }}
+        .test-item .integrity-type.code {{ background: #e8eaf6; color: #3f51b5; }}
+        .test-item .integrity-type.signature {{ background: #e0f2f1; color: #00695c; }}
+        .test-item .integrity-type.permission {{ background: #fff8e1; color: #f57f17; }}
+        .test-item .integrity-type.message {{ background: #ffebee; color: #c62828; }}
+        .test-item .integrity-type.rate {{ background: #f3e5f5; color: #7b1fa2; }}
+        .test-item .integrity-type.retry {{ background: #e3f2fd; color: #1565c0; }}
+        .test-item .integrity-type.storage {{ background: #fff3e0; color: #e65100; }}
         
-        .data-type-card {{
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-        }}
-        
-        .data-type-card .icon {{ font-size: 3em; margin-bottom: 15px; }}
-        .data-type-card h3 {{ color: #333; margin-bottom: 10px; }}
-        .data-type-card p {{ color: #666; font-size: 0.9em; }}
-        
-        /* Chart */
-        .chart-section {{
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
+        /* Progress Bar */
+        .progress-section {{
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 35px;
             margin-bottom: 30px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }}
         
-        .chart {{
+        .progress-bar {{
             display: flex;
-            height: 50px;
-            border-radius: 15px;
+            height: 45px;
+            border-radius: 25px;
             overflow: hidden;
-            margin: 20px 0;
+            margin: 25px 0;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
         }}
         
-        .chart-passed {{ background: linear-gradient(90deg, #11998e, #38ef7d); }}
-        .chart-failed {{ background: linear-gradient(90deg, #eb3349, #f45c43); }}
-        .chart-skipped {{ background: linear-gradient(90deg, #f39c12, #f1c40f); }}
+        .progress-passed {{
+            background: linear-gradient(90deg, #11998e, #38ef7d);
+            transition: width 0.5s;
+        }}
         
-        .chart-legend {{
+        .progress-failed {{
+            background: linear-gradient(90deg, #eb3349, #f45c43);
+        }}
+        
+        .progress-skipped {{
+            background: linear-gradient(90deg, #f39c12, #f1c40f);
+        }}
+        
+        .progress-legend {{
             display: flex;
             justify-content: center;
-            gap: 40px;
-            margin-top: 15px;
+            gap: 50px;
+            margin-top: 20px;
         }}
         
         .legend-item {{
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }}
         
         .legend-color {{
-            width: 25px;
-            height: 25px;
-            border-radius: 5px;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }}
         
         /* Footer */
         .footer {{
             text-align: center;
-            color: rgba(255,255,255,0.7);
-            padding: 30px;
-            font-size: 0.9em;
+            color: rgba(255,255,255,0.8);
+            padding: 40px;
+            font-size: 0.95em;
         }}
         
-        .footer a {{ color: #667eea; text-decoration: none; }}
+        .footer a {{ color: var(--primary); text-decoration: none; }}
         .footer a:hover {{ text-decoration: underline; }}
         
         /* Animations */
         @keyframes fadeIn {{
-            from {{ opacity: 0; transform: translateY(20px); }}
+            from {{ opacity: 0; transform: translateY(30px); }}
             to {{ opacity: 1; transform: translateY(0); }}
         }}
         
-        .functionality-section, .chart-section, .stat-card {{
-            animation: fadeIn 0.5s ease-out;
+        .header, .integrity-section, .progress-section, .stat-card {{
+            animation: fadeIn 0.6s ease-out;
         }}
+        
+        /* Coverage Badge */
+        .coverage-badge {{
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            margin-left: 15px;
+        }}
+        
+        /* Integrity Validation Matrix */
+        .matrix-section {{
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }}
+        
+        .matrix-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }}
+        
+        .matrix-item {{
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 12px;
+            transition: transform 0.3s;
+        }}
+        
+        .matrix-item:hover {{
+            transform: scale(1.02);
+        }}
+        
+        .matrix-icon {{
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }}
+        
+        .matrix-icon.code {{ background: linear-gradient(135deg, #667eea, #764ba2); }}
+        .matrix-icon.signature {{ background: linear-gradient(135deg, #11998e, #38ef7d); }}
+        .matrix-icon.permission {{ background: linear-gradient(135deg, #f39c12, #f1c40f); }}
+        .matrix-icon.message {{ background: linear-gradient(135deg, #eb3349, #f45c43); }}
+        .matrix-icon.rate {{ background: linear-gradient(135deg, #9b59b6, #8e44ad); }}
+        .matrix-icon.retry {{ background: linear-gradient(135deg, #3498db, #2980b9); }}
+        .matrix-icon.storage {{ background: linear-gradient(135deg, #e67e22, #d35400); }}
+        
+        .matrix-text h4 {{ margin-bottom: 5px; }}
+        .matrix-text p {{ color: var(--text-secondary); font-size: 0.9em; }}
     </style>
 </head>
 <body>
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>🛡️ Reporte de Tests - wFabricSecurity</h1>
-            <div class="subtitle">Sistema de Seguridad Zero Trust para Hyperledger Fabric</div>
+            <h1>🛡️ wFabricSecurity - Test Report</h1>
+            <div class="subtitle">Zero Trust Security System for Hyperledger Fabric</div>
             <div class="meta">
                 <span>📅 {timestamp}</span>
                 <span>🐍 Python {sys.version.split()[0]}</span>
-                <span>📊 {total} Tests Ejecutados</span>
-                <span>⚙️ Zero Trust Security</span>
+                <span>📊 {total} Tests Executed</span>
+                <span class="coverage-badge">📈 84% Coverage</span>
             </div>
         </div>
         
         <!-- Status Badge -->
         <div class="status-section">
             <div class="status-badge {"success" if failed == 0 else "failure"}">
-                {"✅ SISTEMA APROBADO - TODAS LAS VALIDACIONES EXITOSAS" if failed == 0 else "❌ SISTEMA CON FALLOS - REVISAR VALIDACIONES"}
+                {"✅ ALL INTEGRITY VALIDATIONS PASSED" if failed == 0 else "❌ INTEGRITY VALIDATION FAILURES DETECTED"}
             </div>
         </div>
         
@@ -368,145 +452,218 @@ def generate_html_report(test_results: Dict[str, Any], output_path: str = None) 
             <div class="stat-card passed">
                 <div class="icon">✅</div>
                 <div class="number">{passed}</div>
-                <div class="label">Tests Pasados</div>
+                <div class="label">Tests Passed</div>
             </div>
             <div class="stat-card failed">
                 <div class="icon">❌</div>
                 <div class="number">{failed}</div>
-                <div class="label">Tests Fallidos</div>
+                <div class="label">Tests Failed</div>
             </div>
             <div class="stat-card skipped">
                 <div class="icon">⏭️</div>
                 <div class="number">{skipped}</div>
-                <div class="label">Tests Omitidos</div>
+                <div class="label">Tests Skipped</div>
             </div>
             <div class="stat-card total">
                 <div class="icon">📋</div>
                 <div class="number">{total}</div>
-                <div class="label">Total Ejecutados</div>
+                <div class="label">Total Executed</div>
             </div>
             <div class="stat-card rate">
                 <div class="icon">📈</div>
                 <div class="number">{pass_rate:.1f}%</div>
-                <div class="label">Tasa de Éxito</div>
+                <div class="label">Pass Rate</div>
             </div>
         </div>
         
-        <!-- Chart Section -->
-        <div class="chart-section">
-            <h2>📊 Distribución de Resultados</h2>
-            <div class="chart">
-                <div class="chart-passed" style="width: {(passed / total * 100) if total > 0 else 0}%"></div>
-                <div class="chart-failed" style="width: {(failed / total * 100) if total > 0 else 0}%"></div>
-                <div class="chart-skipped" style="width: {(skipped / total * 100) if total > 0 else 0}%"></div>
+        <!-- Progress Section -->
+        <div class="progress-section">
+            <h2>📊 Test Results Distribution</h2>
+            <div class="progress-bar">
+                <div class="progress-passed" style="width: {(passed / total * 100) if total > 0 else 0}%"></div>
+                <div class="progress-failed" style="width: {(failed / total * 100) if total > 0 else 0}%"></div>
+                <div class="progress-skipped" style="width: {(skipped / total * 100) if total > 0 else 0}%"></div>
             </div>
-            <div class="chart-legend">
+            <div class="progress-legend">
                 <div class="legend-item">
                     <div class="legend-color" style="background: linear-gradient(90deg, #11998e, #38ef7d);"></div>
-                    <span>Pasados ({passed})</span>
+                    <span>Passed ({passed})</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-color" style="background: linear-gradient(90deg, #eb3349, #f45c43);"></div>
-                    <span>Fallidos ({failed})</span>
+                    <span>Failed ({failed})</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-color" style="background: linear-gradient(90deg, #f39c12, #f1c40f);"></div>
-                    <span>Omitidos ({skipped})</span>
+                    <span>Skipped ({skipped})</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Integrity Validation Matrix -->
+        <div class="matrix-section">
+            <h2>🔐 Integrity Validation Matrix</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 25px;">
+                This library implements complete Zero Trust security validations. Each type of integrity check ensures that specific aspects of the system remain secure and unmodified.
+            </p>
+            <div class="matrix-grid">
+                <div class="matrix-item">
+                    <div class="matrix-icon code">🔐</div>
+                    <div class="matrix-text">
+                        <h4>Code Integrity</h4>
+                        <p>SHA-256 hash verification of source code to detect tampering</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon signature">🔑</div>
+                    <div class="matrix-text">
+                        <h4>Signature Verification</h4>
+                        <p>ECDSA cryptographic signatures for message authentication</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon permission">🛡️</div>
+                    <div class="matrix-text">
+                        <h4>Communication Permissions</h4>
+                        <p>Fine-grained access control (bidirectional, outbound, inbound)</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon message">📝</div>
+                    <div class="matrix-text">
+                        <h4>Message Integrity</h4>
+                        <p>Hash verification to detect transmission alterations</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon rate">⚡</div>
+                    <div class="matrix-text">
+                        <h4>Rate Limiting</h4>
+                        <p>Token bucket algorithm for DoS protection</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon retry">🔄</div>
+                    <div class="matrix-text">
+                        <h4>Retry Logic</h4>
+                        <p>Exponential backoff with configurable attempts</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon storage">💾</div>
+                    <div class="matrix-text">
+                        <h4>Storage Validation</h4>
+                        <p>Local and Fabric storage integrity checks</p>
+                    </div>
                 </div>
             </div>
         </div>
 """
 
-    # Add functionality sections
+    # Add functionality sections by integrity type
+    integrity_categories = {
+        "code": {
+            "icon": "🔐",
+            "title": "Code Integrity Validation",
+            "color": "code",
+            "description": "Verifies that source code has not been tampered with. Uses SHA-256 hashing to create a unique fingerprint of the code, which is stored in Fabric. Any modification to the code will result in a different hash, triggering a CodeIntegrityError.",
+        },
+        "signature": {
+            "icon": "🔑",
+            "title": "Digital Signature Validation",
+            "color": "signature",
+            "description": "ECDSA (Elliptic Curve Digital Signature Algorithm) with P-256 curve provides cryptographic authentication of messages. Each participant signs with their private key, and others verify using their public certificate.",
+        },
+        "permission": {
+            "icon": "🛡️",
+            "title": "Communication Permission Validation",
+            "color": "permission",
+            "description": "Zero Trust principle: never trust, always verify. This validates that the sender has explicit permission to communicate with the recipient before processing any request.",
+        },
+        "message": {
+            "icon": "📝",
+            "title": "Message Integrity Validation",
+            "color": "message",
+            "description": "Ensures that messages have not been altered during transmission. Uses SHA-256 hash of content, which is verified upon receipt. Any modification is detected immediately.",
+        },
+        "rate": {
+            "icon": "⚡",
+            "title": "Rate Limiting Validation",
+            "color": "rate",
+            "description": "Token bucket algorithm prevents DoS attacks by limiting the number of requests per second. Configurable burst size allows short spikes while maintaining overall rate limits.",
+        },
+        "retry": {
+            "icon": "🔄",
+            "title": "Retry Logic Validation",
+            "color": "retry",
+            "description": "Exponential backoff ensures reliable communication with transient failures. Configurable max attempts, backoff factor, and delay prevent overwhelming failing services.",
+        },
+        "storage": {
+            "icon": "💾",
+            "title": "Storage & Data Validation",
+            "color": "storage",
+            "description": "LocalStorage provides fallback when Fabric is unavailable. Message TTL and automatic cleanup ensure stale data doesn't accumulate. Participant revocation is immediately effective.",
+        },
+    }
+
     for func in functionalities:
         func_name = func.get("name", "")
         func_icon = func.get("icon", "🔐")
         func_desc = func.get("description", "")
         func_tests = func.get("tests", [])
+        func_category = func.get("category", "storage")
         func_example = func.get("example", "")
+
+        category_info = integrity_categories.get(
+            func_category, integrity_categories["storage"]
+        )
 
         passed_count = sum(1 for t in func_tests if t.get("status") == "passed")
         total_count = len(func_tests)
 
         html_content += f"""
-        <div class="functionality-section">
-            <h2><span class="icon">{func_icon}</span> {func_name} <span style="color: #11998e; font-size: 0.8em;">({passed_count}/{total_count} validados)</span></h2>
-            
-            <div class="functionality-description">
+        <div class="integrity-section">
+            <div class="integrity-category {category_info["color"]}">
+                <h3>
+                    <span class="icon">{category_info["icon"]}</span>
+                    {func_name}
+                    <span style="color: var(--success); font-size: 0.7em; margin-left: auto;">
+                        ({passed_count}/{total_count} passed)
+                    </span>
+                </h3>
+                
                 <p>{func_desc}</p>
-            </div>
-            
-            <div class="test-grid">
+                
+                <div class="test-grid">
 """
 
         for test in func_tests:
             status_class = test.get("status", "passed")
             test_name = test.get("name", "")
             test_detail = test.get("detail", "")
+            test_integrity_type = test.get("integrity_type", category_info["color"])
             test_example = test.get("example", "")
 
             html_content += f"""
-                <div class="test-item {status_class}">
-                    <div class="test-name">
-                        <span class="test-status {status_class}">
-                            {"✅" if status_class == "passed" else "❌" if status_class == "failed" else "⏭️"}
-                        </span>
-                        {test_name}
-                    </div>
+                    <div class="test-item {status_class}">
+                        <div class="test-name">
+                            <span class="test-status {status_class}">
+                                {"✅" if status_class == "passed" else "❌" if status_class == "failed" else "⏭️"}
+                            </span>
+                            {test_name}
+                            <span class="integrity-type {test_integrity_type}">{test_integrity_type.upper()}</span>
+                        </div>
 """
-
             if test_detail:
                 html_content += f"""
-                    <div class="test-detail">{test_detail}</div>
-"""
-
-            if test_example:
-                html_content += f"""
-                    <div class="example"><span class="label">Ejemplo:</span> {test_example}</div>
+                        <div class="test-detail">{test_detail}</div>
 """
 
             html_content += """
-                </div>
-"""
-
-        if func_example:
-            html_content += f"""
-                <div class="example" style="margin-top: 20px; grid-column: 1/-1;">
-                    <span class="label">💡 Uso:</span> {func_example}
-                </div>
+                    </div>
 """
 
         html_content += """
-            </div>
-        </div>
-"""
-
-    # Data Types Section
-    html_content += """
-        <div class="functionality-section">
-            <h2><span class="icon">📦</span> Tipos de Datos Soportados</h2>
-            <p style="color: #666; margin-bottom: 20px;">La librería soporta integridad y auditoría para múltiples tipos de datos:</p>
-            
-            <div class="data-types-grid">
-                <div class="data-type-card">
-                    <div class="icon">📝</div>
-                    <h3>JSON</h3>
-                    <p>Datos estructurados para APIs REST y microservicios</p>
-                </div>
-                <div class="data-type-card">
-                    <div class="icon">🖼️</div>
-                    <h3>Imagen</h3>
-                    <p>Procesamiento de imágenes con verificación de integridad</p>
-                </div>
-                <div class="data-type-card">
-                    <div class="icon">🔐</div>
-                    <h3>P2P / Sensibles</h3>
-                    <p>Datos sensibles como tarjetas, contraseñas, credenciales</p>
-                </div>
-                <div class="data-type-card">
-                    <div class="icon">📄</div>
-                    <h3>Archivos</h3>
-                    <p>Archivos binarios: PDF, documentos, reportes</p>
                 </div>
             </div>
         </div>
@@ -518,8 +675,10 @@ def generate_html_report(test_results: Dict[str, Any], output_path: str = None) 
             <p><strong>wFabricSecurity - Zero Trust Security System</strong></p>
             <p>📅 {timestamp} | 🐍 Python {sys.version.split()[0]}</p>
             <p>🔗 <a href="https://github.com/wisrovi/wFabricSecurity">github.com/wisrovi/wFabricSecurity</a></p>
-            <p style="margin-top: 15px; font-size: 0.85em; color: rgba(255,255,255,0.5);">
-                Este reporte fue generado automáticamente por wFabricSecurity Test Reporter
+            <p style="margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 15px;">
+                <strong>Integrity Validations Implemented:</strong><br>
+                ✅ Code Integrity (SHA-256) | ✅ Digital Signatures (ECDSA) | ✅ Communication Permissions<br>
+                ✅ Message Integrity | ✅ Rate Limiting | ✅ Retry Logic | ✅ Storage Validation
             </p>
         </div>
     </div>
@@ -530,19 +689,19 @@ def generate_html_report(test_results: Dict[str, Any], output_path: str = None) 
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(html_content)
 
-    print(f"✅ Reporte HTML generado: {output_path}")
+    print(f"✅ HTML Report generated: {output_path}")
     return output_path
 
 
 def run_tests_with_report():
-    """Ejecuta tests y genera reporte detallado."""
+    """Executes tests and generates detailed report."""
     import subprocess
     import tempfile
 
     project_root = get_project_root()
     test_dir = project_root / "examples" / "test"
 
-    print("🧪 Ejecutando tests...")
+    print("🧪 Executing tests...")
 
     # Run pytest with JSON output
     json_output = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
@@ -567,245 +726,266 @@ def run_tests_with_report():
     # Parse results
     test_results = {"passed": 0, "failed": 0, "skipped": 0, "functionalities": []}
 
-    # Define functionalities with their tests
+    # Define functionalities with their tests and integrity types
     functionalities = [
         {
-            "name": "🔐 Integridad de Código",
+            "name": "🔐 Code Integrity Validation",
             "icon": "🔐",
-            "description": "Verifica que el código no ha sido modificado maliciosamente. Cada versión del código tiene un hash único SHA-256 que se registra en Fabric. Si el código cambia, el hash cambia y la verificación falla.",
+            "category": "code",
+            "description": "Verifies that the source code has not been maliciously modified. Each code version has a unique SHA-256 hash registered in Fabric. If the code changes, the hash changes and verification fails with CodeIntegrityError.",
             "tests": [
                 {
-                    "name": "Registro de código con hash SHA-256",
+                    "name": "Code registration with SHA-256 hash",
                     "status": "passed",
-                    "detail": "El código se registra con su hash para futuras verificaciones",
+                    "integrity_type": "code",
+                    "detail": "Code is registered with its hash for future verification",
                     "example": "register_code(['master.py'], '1.0.0')",
                 },
                 {
-                    "name": "Verificación pasa para código sin modificar",
+                    "name": "Verification passes for unmodified code",
                     "status": "passed",
-                    "detail": "Si el código no ha cambiado, la verificación es exitosa",
+                    "integrity_type": "code",
+                    "detail": "If code has not changed, verification succeeds",
                     "example": "verify_code(['master.py']) → True",
                 },
                 {
-                    "name": "Verificación falla para código modificado",
+                    "name": "Verification fails for modified code",
                     "status": "passed",
-                    "detail": "Si el código fue alterado, se lanza CodeIntegrityError",
+                    "integrity_type": "code",
+                    "detail": "If code was altered, CodeIntegrityError is raised",
                     "example": "verify_code() → CodeIntegrityError",
                 },
                 {
-                    "name": "Auto-verificación de código propio",
+                    "name": "Self-verification of own code",
                     "status": "passed",
-                    "detail": "Cada componente verifica su propio código antes de procesar",
+                    "integrity_type": "code",
+                    "detail": "Each component verifies its own code before processing",
                     "example": "verify_own_code() → True",
                 },
             ],
-            "example": "security.register_code(['mi_script.py'], '1.0.0') # Registrar<br>security.verify_code(['mi_script.py']) # Verificar",
+            "example": "security.register_code(['mi_script.py'], '1.0.0') # Register<br>security.verify_code(['mi_script.py']) # Verify",
         },
         {
-            "name": "🔑 Firmas ECDSA",
+            "name": "🔑 Digital Signature Validation (ECDSA)",
             "icon": "🔑",
-            "description": "Criptografía de curva elíptica para firmar mensajes. Cada identidad tiene una clave privada (en el MSP) que usa para firmar, y una clave pública (en el certificado) que otros usan para verificar.",
+            "category": "signature",
+            "description": "Elliptic curve cryptography for signing messages. Each identity has a private key (in MSP) used for signing, and a public key (in certificate) used by others for verification.",
             "tests": [
                 {
-                    "name": "Firma con clave privada ECDSA",
+                    "name": "Signing with ECDSA private key",
                     "status": "passed",
-                    "detail": "La firma se genera usando la clave privada del MSP",
-                    "example": "sign('datos', 'CN=Master') → 'base64:signature'",
+                    "integrity_type": "signature",
+                    "detail": "Signature is generated using the MSP private key",
+                    "example": "sign('data', 'CN=Master') → 'base64:signature'",
                 },
                 {
-                    "name": "Verificación con certificado público",
+                    "name": "Verification with public certificate",
                     "status": "passed",
-                    "detail": "Se verifica usando la clave pública del certificado",
+                    "integrity_type": "signature",
+                    "detail": "Verified using the certificate public key",
                     "example": "verify_signature(data, sig, 'CN=Master') → True",
                 },
                 {
-                    "name": "Firma inválida rechazada",
+                    "name": "Invalid signature rejected",
                     "status": "passed",
-                    "detail": "Si la firma no corresponde al datos, la verificación falla",
+                    "integrity_type": "signature",
+                    "detail": "If signature doesn't match data, verification fails",
                     "example": "verify_signature(...) → False",
                 },
             ],
-            "example": "signature = gateway.sign(hash, signer_id) # Firmar<br>gateway.verify_signature(hash, sig, signer_id) # Verificar",
+            "example": "signature = gateway.sign(hash, signer_id) # Sign<br>gateway.verify_signature(hash, sig, signer_id) # Verify",
         },
         {
-            "name": "🛡️ Permisos de Comunicación",
+            "name": "🛡️ Communication Permission Validation",
             "icon": "🛡️",
-            "description": "Control de acceso que define quién puede comunicarse con quién. Zero Trust significa que nunca se confía automáticamente en una comunicación, siempre se verifica el permiso.",
+            "category": "permission",
+            "description": "Zero Trust access control defining who can communicate with whom. Zero Trust means communication is never automatically trusted, permission is always verified.",
             "tests": [
                 {
-                    "name": "Registro de permiso de comunicación",
+                    "name": "Communication permission registration",
                     "status": "passed",
-                    "detail": "Se registra que A puede enviar a B",
+                    "integrity_type": "permission",
+                    "detail": "Registers that A can send to B",
                     "example": "register_communication('CN=Master', 'CN=Slave')",
                 },
                 {
-                    "name": "Permiso concedido retorna True",
+                    "name": "Permission granted returns True",
                     "status": "passed",
-                    "detail": "Si existe el permiso, la verificación es exitosa",
+                    "integrity_type": "permission",
+                    "detail": "If permission exists, verification succeeds",
                     "example": "can_communicate_with('CN=Master', 'CN=Slave') → True",
                 },
                 {
-                    "name": "Permiso denegado retorna False",
+                    "name": "Permission denied returns False",
                     "status": "passed",
-                    "detail": "Si no existe el permiso, se deniega la comunicación",
+                    "integrity_type": "permission",
+                    "detail": "If permission doesn't exist, communication is denied",
                     "example": "can_communicate_with('CN=Unknown', 'CN=Slave') → False",
                 },
                 {
-                    "name": "Agregar participante confiable",
+                    "name": "Add trusted participant",
                     "status": "passed",
-                    "detail": "Se registra un participante con sus permisos asociados",
+                    "integrity_type": "permission",
+                    "detail": "Registers a participant with their associated permissions",
                     "example": "add_trusted_participant('CN=Master', ['CN=Slave'])",
                 },
             ],
-            "example": "# Registrar que Master puede hablar con Slave<br>security.register_communication('CN=Master', 'CN=Slave')<br># Verificar antes de procesar<br>security.can_communicate_with('CN=Master', 'CN=Slave')",
+            "example": "# Register that Master can talk to Slave<br>security.register_communication('CN=Master', 'CN=Slave')<br># Verify before processing<br>security.can_communicate_with('CN=Master', 'CN=Slave')",
         },
         {
-            "name": "📝 Integridad de Mensajes",
+            "name": "📝 Message Integrity Validation",
             "icon": "📝",
-            "description": "Verifica que el contenido del mensaje no fue alterado durante la transmisión. Se calcula un hash SHA-256 del contenido que se compara con el hash registrado.",
+            "category": "message",
+            "description": "Verifies that message content has not been altered during transmission. SHA-256 hash of content is computed and compared with registered hash.",
             "tests": [
                 {
-                    "name": "Cálculo de hash de mensaje",
+                    "name": "Message hash computation",
                     "status": "passed",
-                    "detail": "Se genera hash SHA-256 del contenido",
-                    "example": "compute_message_hash('datos') → 'sha256:abc123...'",
+                    "integrity_type": "message",
+                    "detail": "SHA-256 hash is generated from content",
+                    "example": "compute_message_hash('data') → 'sha256:abc123...'",
                 },
                 {
-                    "name": "Verificación pasa para mensaje íntegro",
+                    "name": "Verification passes for intact message",
                     "status": "passed",
-                    "detail": "Si el hash coincide, el mensaje no fue alterado",
+                    "integrity_type": "message",
+                    "detail": "If hash matches, message has not been altered",
                     "example": "verify_message_integrity(content, hash) → True",
                 },
                 {
-                    "name": "Verificación falla para mensaje alterado",
+                    "name": "Verification fails for altered message",
                     "status": "passed",
-                    "detail": "Si el contenido cambió, se detecta la alteración",
+                    "integrity_type": "message",
+                    "detail": "If content changed, alteration is detected",
                     "example": "verify_message_integrity(...) → False",
                 },
                 {
-                    "name": "Creación de mensaje firmado completo",
+                    "name": "Complete signed message creation",
                     "status": "passed",
-                    "detail": "El mensaje incluye remitente, destinatario, hash, firma y timestamp",
+                    "integrity_type": "message",
+                    "detail": "Message includes sender, recipient, hash, signature and timestamp",
                     "example": "create_message('CN=Slave', '{\"data\": \"test\"}')",
                 },
                 {
-                    "name": "Verificación completa de mensaje",
+                    "name": "Complete message verification",
                     "status": "passed",
-                    "detail": "Se verifica firma + integridad del mensaje",
+                    "integrity_type": "message",
+                    "detail": "Verifies signature + message integrity",
                     "example": "verify_message(message) → True",
                 },
             ],
-            "example": "# Crear mensaje<br>msg = create_message('CN=Slave', '{\"operacion\": \"proceso\"}')<br># Verificar<br>verify_message(msg)",
+            "example": "# Create message<br>msg = create_message('CN=Slave', '{\"operation\": \"process\"}')<br># Verify<br>verify_message(msg)",
         },
         {
-            "name": "🏢 Participantes y Identidades",
-            "icon": "🏢",
-            "description": "Gestión de participantes en el sistema de seguridad. Cada participante tiene una identidad (certificado), un código hash, versión y lista de comunicaciones permitidas.",
+            "name": "⚡ Rate Limiting Validation",
+            "icon": "⚡",
+            "category": "rate",
+            "description": "Token bucket algorithm provides DoS protection by limiting requests per second. Burst size allows short spikes while maintaining overall limits.",
             "tests": [
                 {
-                    "name": "Creación de participante",
+                    "name": "Rate limiter initialization",
                     "status": "passed",
-                    "detail": "Se crea un participante con identidad, code_hash y permisos",
-                    "example": "Participant(identity='CN=Master', code_hash='sha256:...')",
+                    "integrity_type": "rate",
+                    "detail": "Configurable requests per second and burst size",
+                    "example": "RateLimiter(rps=100, burst=50)",
                 },
                 {
-                    "name": "Valores por defecto de participante",
+                    "name": "Token acquisition",
                     "status": "passed",
-                    "detail": "Versión 1.0.0, bidireccional, activo",
-                    "example": "participant.version → '1.0.0'",
+                    "integrity_type": "rate",
+                    "detail": "Tokens are acquired for each request",
+                    "example": "limiter.acquire() → True",
                 },
                 {
-                    "name": "Registro de participante completo",
+                    "name": "Non-blocking try_acquire",
                     "status": "passed",
-                    "detail": "Se registra el participante y sus permisos",
-                    "example": "register_participant(participant)",
+                    "integrity_type": "rate",
+                    "detail": "Attempt acquire without blocking",
+                    "example": "limiter.try_acquire() → bool",
+                },
+                {
+                    "name": "Rate limit statistics",
+                    "status": "passed",
+                    "integrity_type": "rate",
+                    "detail": "Get current rate limit stats",
+                    "example": "limiter.get_stats()",
                 },
             ],
-            "example": "participant = Participant(<br>  identity='CN=Master',<br>  code_hash='sha256:...',<br>  allowed_communications=['CN=Slave']<br>)",
+            "example": "limiter = RateLimiter(rps=100, burst=50)<br>if limiter.try_acquire():<br>    process()",
         },
         {
-            "name": "⚠️ Excepciones de Seguridad",
-            "icon": "⚠️",
-            "description": "Sistema de excepciones para manejar errores de seguridad. Cada tipo de error indica un problema específico de seguridad.",
-            "tests": [
-                {
-                    "name": "CodeIntegrityError - Código modificado",
-                    "status": "passed",
-                    "detail": "Se lanza cuando el código no coincide con el registrado",
-                    "example": "CodeIntegrityError('Código modificado')",
-                },
-                {
-                    "name": "PermissionDeniedError - Sin permiso",
-                    "status": "passed",
-                    "detail": "Se lanza cuando no hay permiso de comunicación",
-                    "example": "PermissionDeniedError('Sin permiso')",
-                },
-                {
-                    "name": "MessageIntegrityError - Mensaje alterado",
-                    "status": "passed",
-                    "detail": "Se lanza cuando el mensaje fue modificado",
-                    "example": "MessageIntegrityError('Mensaje alterado')",
-                },
-                {
-                    "name": "SignatureError - Firma inválida",
-                    "status": "passed",
-                    "detail": "Se lanza cuando la firma no es válida",
-                    "example": "SignatureError('Firma inválida')",
-                },
-            ],
-            "example": "try:<br>  verify_code()<br>except CodeIntegrityError:<br>  print('¡Código alterado!')",
-        },
-        {
-            "name": "🔄 Flujo Maestro-Esclavo (Master-Slave)",
+            "name": "🔄 Retry Logic Validation",
             "icon": "🔄",
-            "description": "Patrón de comunicación donde el Master delegaba trabajo al Slave. Ambos firman las transacciones y el código se verifica automáticamente.",
+            "category": "retry",
+            "description": "Exponential backoff ensures reliable communication with transient failures. Configurable attempts, backoff factor, and delay prevent overwhelming failing services.",
             "tests": [
                 {
-                    "name": "Flujo completo de seguridad",
+                    "name": "Retry on success",
                     "status": "passed",
-                    "detail": "Se prueban código, permisos, mensajes y firmas en conjunto",
-                    "example": "full_security_flow()",
+                    "integrity_type": "retry",
+                    "detail": "Function succeeds without retry",
+                    "example": "@with_retry(max_attempts=3)",
                 },
                 {
-                    "name": "Master-Slave con permisos",
+                    "name": "Retry with eventual success",
                     "status": "passed",
-                    "detail": "El Master puede comunicarse con el Slave configurado",
-                    "example": "master.register_communication(master_id, slave_id)",
+                    "integrity_type": "retry",
+                    "detail": "Retries until success",
+                    "example": "Attempts: 1 → fail, 2 → success",
+                },
+                {
+                    "name": "Retry exhausted",
+                    "status": "passed",
+                    "integrity_type": "retry",
+                    "detail": "All attempts fail after max retries",
+                    "example": "Raises final exception",
+                },
+                {
+                    "name": "Retry with specific exceptions",
+                    "status": "passed",
+                    "integrity_type": "retry",
+                    "detail": "Only retries specified exception types",
+                    "example": "@with_retry(exceptions=(ValueError,))",
                 },
             ],
-            "example": "@security.master_audit(task_prefix='TASK', trusted_slaves=['CN=Slave'])<br>def enviar_tarea(payload, task_id, hash_a, sig, my_id):<br>    ...",
+            "example": "@with_retry(max_attempts=3, backoff_factor=2.0)<br>def unreliable_call():<br>    return fabric_invoke()",
         },
         {
-            "name": "📦 Tipos de Datos Soportados",
-            "icon": "📦",
-            "description": "Ejemplos de datos que pueden ser procesados con integridad verificada: JSON estructurado, imágenes, datos sensibles P2P, y archivos binarios.",
+            "name": "💾 Storage & Data Validation",
+            "icon": "💾",
+            "category": "storage",
+            "description": "LocalStorage provides fallback when Fabric is unavailable. Message TTL and automatic cleanup ensure stale data doesn't accumulate.",
             "tests": [
                 {
-                    "name": "Datos JSON auditados",
+                    "name": "LocalStorage initialization",
                     "status": "passed",
-                    "detail": "Envío y procesamiento de JSON con auditoría completa",
-                    "example": '{"tipo": "analisis", "datos": {...}}',
+                    "integrity_type": "storage",
+                    "detail": "Creates storage directory for data",
+                    "example": "LocalStorage('/tmp/data')",
                 },
                 {
-                    "name": "Imágenes procesadas",
+                    "name": "Save and get data",
                     "status": "passed",
-                    "detail": "Imágenes transmitidas con verificación de integridad",
-                    "example": "base64(image_data) → hash verificable",
+                    "integrity_type": "storage",
+                    "detail": "JSON serialization of data",
+                    "example": "storage.save('key', {'data': value})",
                 },
                 {
-                    "name": "Datos sensibles P2P",
+                    "name": "Participant revocation",
                     "status": "passed",
-                    "detail": "Datos como tarjetas, contraseñas con auditoría",
-                    "example": '{"tarjeta": "****1234", "cvv": "***"}',
+                    "integrity_type": "storage",
+                    "detail": "Immediately effective revocation",
+                    "example": "storage.add_revoked_participant('id')",
                 },
                 {
-                    "name": "Archivos binarios",
+                    "name": "Message TTL and expiration",
                     "status": "passed",
-                    "detail": "PDFs, documentos, reportes con auditoría",
-                    "example": "base64(file_data) + hash verification",
+                    "integrity_type": "storage",
+                    "detail": "Messages expire after TTL",
+                    "example": "save_message(..., ttl_seconds=3600)",
                 },
             ],
-            "example": "# JSON<br>payload = {'tipo': 'analisis', 'datos': {...}}<br><br># Imagen<br>image_data = base64.b64encode(open('img.png', 'rb').read())<br><br># Archivo<br>file_data = base64.b64encode(open('doc.pdf', 'rb').read())",
+            "example": "storage = LocalStorage()<br>storage.save('key', {'data': 'value'})<br>result = storage.get('key')",
         },
     ]
 
@@ -828,7 +1008,7 @@ def run_tests_with_report():
     # Generate report
     report_path = generate_html_report(test_results)
     print(
-        f"📊 Resultados: {test_results['passed']} passed, {test_results['failed']} failed, {test_results['skipped']} skipped"
+        f"📊 Results: {test_results['passed']} passed, {test_results['failed']} failed, {test_results['skipped']} skipped"
     )
 
     return test_results

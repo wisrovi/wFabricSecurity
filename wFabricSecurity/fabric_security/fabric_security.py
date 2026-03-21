@@ -371,6 +371,56 @@ class FabricSecuritySimple:
         """Register code."""
         return self.gateway.register_code_identity(code_paths, version)
 
+    def create_message(
+        self,
+        sender: str = None,
+        recipient: str = None,
+        content: str = None,
+        data_type: str = "json",
+    ) -> "Message":
+        """Create a signed message ready to send."""
+        from .core import Message
+
+        signer_id = sender or self.gateway.get_signer_id()
+        content_hash = self.gateway.compute_message_hash(content or "")
+        timestamp = hashlib.sha256(
+            f"{signer_id}{recipient or ''}{content or ''}".encode()
+        ).hexdigest()[:16]
+        message_id = f"msg_{timestamp}"
+
+        signature = self.gateway.sign(f"{content_hash}{recipient or ''}", signer_id)
+
+        return Message(
+            sender=signer_id,
+            recipient=recipient or "",
+            content=content or "",
+            content_hash=content_hash,
+            signature=signature,
+            timestamp=timestamp,
+            message_id=message_id,
+            data_type=data_type,
+        )
+
+    def verify_message(self, message: "Message") -> bool:
+        """Verify a complete message (signature + integrity)."""
+        data_to_verify = f"{message.content_hash}{message.recipient}"
+
+        if not self.gateway.verify_signature(
+            data_to_verify, message.signature, message.sender
+        ):
+            logger.error(
+                f"[FabricSecuritySimple] Invalid signature from {message.sender}"
+            )
+            return False
+
+        if not self.gateway.verify_message_integrity(
+            message.content, message.content_hash
+        ):
+            logger.error(f"[FabricSecuritySimple] Message altered")
+            return False
+
+        return True
+
     def verify_code(self, code_paths: list = None) -> bool:
         """Verify code."""
         if code_paths is None:

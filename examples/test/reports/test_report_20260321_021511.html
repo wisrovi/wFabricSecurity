@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>wFabricSecurity - Test Report</title>
+    <style>
+        :root {
+            --primary: #667eea;
+            --primary-dark: #764ba2;
+            --success: #11998e;
+            --success-light: #38ef7d;
+            --danger: #eb3349;
+            --danger-light: #f45c43;
+            --warning: #f39c12;
+            --info: #3498db;
+            --bg-dark: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            --card-bg: #ffffff;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-primary);
+        }
+        
+        .container { max-width: 1600px; margin: 0 auto; }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px;
+            border-radius: 25px;
+            margin-bottom: 40px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.4);
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header .subtitle {
+            font-size: 1.4em;
+            opacity: 0.95;
+            margin-bottom: 25px;
+        }
+        
+        .header .meta {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .header .meta span {
+            background: rgba(255,255,255,0.2);
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 1em;
+        }
+        
+        /* Status Badge */
+        .status-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 25px 60px;
+            border-radius: 50px;
+            font-size: 1.6em;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .status-badge.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        
+        .status-badge.failure {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        
+        .stat-card .icon { font-size: 2.8em; margin-bottom: 15px; }
+        .stat-card .number { font-size: 3.2em; font-weight: bold; }
+        .stat-card .label { color: var(--text-secondary); margin-top: 12px; font-size: 1.1em; }
+        
+        .stat-card.passed { border-top: 6px solid var(--success); }
+        .stat-card.passed .number { color: var(--success); }
+        
+        .stat-card.failed { border-top: 6px solid var(--danger); }
+        .stat-card.failed .number { color: var(--danger); }
+        
+        .stat-card.skipped { border-top: 6px solid var(--warning); }
+        .stat-card.skipped .number { color: var(--warning); }
+        
+        .stat-card.total { border-top: 6px solid var(--primary); }
+        .stat-card.total .number { color: var(--primary); }
+        
+        .stat-card.rate { border-top: 6px solid var(--success-light); }
+        .stat-card.rate .number { color: var(--success-light); }
+        
+        /* Integrity Categories */
+        .integrity-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .integrity-category {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 6px solid var(--primary);
+        }
+        
+        .integrity-category.code { border-left-color: #667eea; }
+        .integrity-category.signature { border-left-color: #11998e; }
+        .integrity-category.permission { border-left-color: #f39c12; }
+        .integrity-category.message { border-left-color: #eb3349; }
+        .integrity-category.rate { border-left-color: #9b59b6; }
+        .integrity-category.retry { border-left-color: #3498db; }
+        .integrity-category.storage { border-left-color: #e67e22; }
+        
+        .integrity-category h3 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .integrity-category h3 .icon { font-size: 1.2em; }
+        
+        .integrity-category p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 10px;
+        }
+        
+        /* Test Items */
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 15px;
+        }
+        
+        .test-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 18px;
+            border-left: 5px solid var(--success);
+            transition: all 0.3s;
+        }
+        
+        .test-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .test-item.passed { border-left-color: var(--success); }
+        .test-item.failed { border-left-color: var(--danger); background: #fff5f5; }
+        .test-item.skipped { border-left-color: var(--warning); background: #fffbf0; }
+        
+        .test-item .test-name {
+            font-weight: bold;
+            font-size: 1.05em;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .test-item .test-status {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        
+        .test-item .test-status.passed { background: #d4edda; color: #155724; }
+        .test-item .test-status.failed { background: #f8d7da; color: #721c24; }
+        .test-item .test-status.skipped { background: #fff3cd; color: #856404; }
+        
+        .test-item .test-detail {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+        
+        .test-item .integrity-type {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 8px;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .test-item .integrity-type.code { background: #e8eaf6; color: #3f51b5; }
+        .test-item .integrity-type.signature { background: #e0f2f1; color: #00695c; }
+        .test-item .integrity-type.permission { background: #fff8e1; color: #f57f17; }
+        .test-item .integrity-type.message { background: #ffebee; color: #c62828; }
+        .test-item .integrity-type.rate { background: #f3e5f5; color: #7b1fa2; }
+        .test-item .integrity-type.retry { background: #e3f2fd; color: #1565c0; }
+        .test-item .integrity-type.storage { background: #fff3e0; color: #e65100; }
+        
+        /* Progress Bar */
+        .progress-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .progress-bar {
+            display: flex;
+            height: 45px;
+            border-radius: 25px;
+            overflow: hidden;
+            margin: 25px 0;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .progress-passed {
+            background: linear-gradient(90deg, #11998e, #38ef7d);
+            transition: width 0.5s;
+        }
+        
+        .progress-failed {
+            background: linear-gradient(90deg, #eb3349, #f45c43);
+        }
+        
+        .progress-skipped {
+            background: linear-gradient(90deg, #f39c12, #f1c40f);
+        }
+        
+        .progress-legend {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-top: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            padding: 40px;
+            font-size: 0.95em;
+        }
+        
+        .footer a { color: var(--primary); text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .header, .integrity-section, .progress-section, .stat-card {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        /* Coverage Badge */
+        .coverage-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+        
+        /* Integrity Validation Matrix */
+        .matrix-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .matrix-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 12px;
+            transition: transform 0.3s;
+        }
+        
+        .matrix-item:hover {
+            transform: scale(1.02);
+        }
+        
+        .matrix-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }
+        
+        .matrix-icon.code { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .matrix-icon.signature { background: linear-gradient(135deg, #11998e, #38ef7d); }
+        .matrix-icon.permission { background: linear-gradient(135deg, #f39c12, #f1c40f); }
+        .matrix-icon.message { background: linear-gradient(135deg, #eb3349, #f45c43); }
+        .matrix-icon.rate { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .matrix-icon.retry { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .matrix-icon.storage { background: linear-gradient(135deg, #e67e22, #d35400); }
+        
+        .matrix-text h4 { margin-bottom: 5px; }
+        .matrix-text p { color: var(--text-secondary); font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🛡️ wFabricSecurity - Test Report</h1>
+            <div class="subtitle">Zero Trust Security System for Hyperledger Fabric</div>
+            <div class="meta">
+                <span>📅 2026-03-21 02:15:11</span>
+                <span>🐍 Python 3.13.5</span>
+                <span>📊 96 Tests Executed</span>
+                <span class="coverage-badge">📈 84% Coverage</span>
+            </div>
+        </div>
+        
+        <!-- Status Badge -->
+        <div class="status-section">
+            <div class="status-badge failure">
+                ❌ INTEGRITY VALIDATION FAILURES DETECTED
+            </div>
+        </div>
+        
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card passed">
+                <div class="icon">✅</div>
+                <div class="number">90</div>
+                <div class="label">Tests Passed</div>
+            </div>
+            <div class="stat-card failed">
+                <div class="icon">❌</div>
+                <div class="number">5</div>
+                <div class="label">Tests Failed</div>
+            </div>
+            <div class="stat-card skipped">
+                <div class="icon">⏭️</div>
+                <div class="number">1</div>
+                <div class="label">Tests Skipped</div>
+            </div>
+            <div class="stat-card total">
+                <div class="icon">📋</div>
+                <div class="number">96</div>
+                <div class="label">Total Executed</div>
+            </div>
+            <div class="stat-card rate">
+                <div class="icon">📈</div>
+                <div class="number">93.8%</div>
+                <div class="label">Pass Rate</div>
+            </div>
+        </div>
+        
+        <!-- Progress Section -->
+        <div class="progress-section">
+            <h2>📊 Test Results Distribution</h2>
+            <div class="progress-bar">
+                <div class="progress-passed" style="width: 93.75%"></div>
+                <div class="progress-failed" style="width: 5.208333333333334%"></div>
+                <div class="progress-skipped" style="width: 1.0416666666666665%"></div>
+            </div>
+            <div class="progress-legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(90deg, #11998e, #38ef7d);"></div>
+                    <span>Passed (90)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(90deg, #eb3349, #f45c43);"></div>
+                    <span>Failed (5)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(90deg, #f39c12, #f1c40f);"></div>
+                    <span>Skipped (1)</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Integrity Validation Matrix -->
+        <div class="matrix-section">
+            <h2>🔐 Integrity Validation Matrix</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 25px;">
+                This library implements complete Zero Trust security validations. Each type of integrity check ensures that specific aspects of the system remain secure and unmodified.
+            </p>
+            <div class="matrix-grid">
+                <div class="matrix-item">
+                    <div class="matrix-icon code">🔐</div>
+                    <div class="matrix-text">
+                        <h4>Code Integrity</h4>
+                        <p>SHA-256 hash verification of source code to detect tampering</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon signature">🔑</div>
+                    <div class="matrix-text">
+                        <h4>Signature Verification</h4>
+                        <p>ECDSA cryptographic signatures for message authentication</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon permission">🛡️</div>
+                    <div class="matrix-text">
+                        <h4>Communication Permissions</h4>
+                        <p>Fine-grained access control (bidirectional, outbound, inbound)</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon message">📝</div>
+                    <div class="matrix-text">
+                        <h4>Message Integrity</h4>
+                        <p>Hash verification to detect transmission alterations</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon rate">⚡</div>
+                    <div class="matrix-text">
+                        <h4>Rate Limiting</h4>
+                        <p>Token bucket algorithm for DoS protection</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon retry">🔄</div>
+                    <div class="matrix-text">
+                        <h4>Retry Logic</h4>
+                        <p>Exponential backoff with configurable attempts</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon storage">💾</div>
+                    <div class="matrix-text">
+                        <h4>Storage Validation</h4>
+                        <p>Local and Fabric storage integrity checks</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="integrity-section">
+            <div class="integrity-category code">
+                <h3>
+                    <span class="icon">🔐</span>
+                    🔐 Code Integrity Validation
+                    <span style="color: var(--success); font-size: 0.7em; margin-left: auto;">
+                        (4/4 passed)
+                    </span>
+                </h3>
+                
+                <p>Verifies that the source code has not been maliciously modified. Each code version has a unique SHA-256 hash registered in Fabric. If the code changes, the hash changes and verification fails with CodeIntegrityError.</p>
+                
+                <div class="test-grid">
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Code registration with SHA-256 hash
+                            <span class="integrity-type code">CODE</span>
+                        </div>
+
+                        <div class="test-detail">Code is registered with its hash for future verification</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Verification passes for unmodified code
+                            <span class="integrity-type code">CODE</span>
+                        </div>
+
+                        <div class="test-detail">If code has not changed, verification succeeds</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Verification fails for modified code
+                            <span class="integrity-type code">CODE</span>
+                        </div>
+
+                        <div class="test-detail">If code was altered, CodeIntegrityError is raised</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Self-verification of own code
+                            <span class="integrity-type code">CODE</span>
+                        </div>
+
+                        <div class="test-detail">Each component verifies its own code before processing</div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="integrity-section">
+            <div class="integrity-category signature">
+                <h3>
+                    <span class="icon">🔑</span>
+                    🔑 Digital Signature Validation (ECDSA)
+                    <span style="color: var(--success); font-size: 0.7em; margin-left: auto;">
+                        (3/3 passed)
+                    </span>
+                </h3>
+                
+                <p>Elliptic curve cryptography for signing messages. Each identity has a private key (in MSP) used for signing, and a public key (in certificate) used by others for verification.</p>
+                
+                <div class="test-grid">
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Signing with ECDSA private key
+                            <span class="integrity-type signature">SIGNATURE</span>
+                        </div>
+
+                        <div class="test-detail">Signature is generated using the MSP private key</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Verification with public certificate
+                            <span class="integrity-type signature">SIGNATURE</span>
+                        </div>
+
+                        <div class="test-detail">Verified using the certificate public key</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Invalid signature rejected
+                            <span class="integrity-type signature">SIGNATURE</span>
+                        </div>
+
+                        <div class="test-detail">If signature doesn't match data, verification fails</div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="integrity-section">
+            <div class="integrity-category permission">
+                <h3>
+                    <span class="icon">🛡️</span>
+                    🛡️ Communication Permission Validation
+                    <span style="color: var(--success); font-size: 0.7em; margin-left: auto;">
+                        (4/4 passed)
+                    </span>
+                </h3>
+                
+                <p>Zero Trust access control defining who can communicate with whom. Zero Trust means communication is never automatically trusted, permission is always verified.</p>
+                
+                <div class="test-grid">
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Communication permission registration
+                            <span class="integrity-type permission">PERMISSION</span>
+                        </div>
+
+                        <div class="test-detail">Registers that A can send to B</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Permission granted returns True
+                            <span class="integrity-type permission">PERMISSION</span>
+                        </div>
+
+                        <div class="test-detail">If permission exists, verification succeeds</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Permission denied returns False
+                            <span class="integrity-type permission">PERMISSION</span>
+                        </div>
+
+                        <div class="test-detail">If permission doesn't exist, communication is denied</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Add trusted participant
+                            <span class="integrity-type permission">PERMISSION</span>
+                        </div>
+
+                        <div class="test-detail">Registers a participant with their associated permissions</div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="integrity-section">
+            <div class="integrity-category message">
+                <h3>
+                    <span class="icon">📝</span>
+                    📝 Message Integrity Validation
+                    <span style="color: var(--success); font-size: 0.7em; margin-left: auto;">
+                        (5/5 passed)
+                    </span>
+                </h3>
+                
+                <p>Verifies that message content has not been altered during transmission. SHA-256 hash of content is computed and compared with registered hash.</p>
+                
+                <div class="test-grid">
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Message hash computation
+                            <span class="integrity-type message">MESSAGE</span>
+                        </div>
+
+                        <div class="test-detail">SHA-256 hash is generated from content</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Verification passes for intact message
+                            <span class="integrity-type message">MESSAGE</span>
+                        </div>
+
+                        <div class="test-detail">If hash matches, message has not been altered</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Verification fails for altered message
+                            <span class="integrity-type message">MESSAGE</span>
+                        </div>
+
+                        <div class="test-detail">If content changed, alteration is detected</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Complete signed message creation
+                            <span class="integrity-type message">MESSAGE</span>
+                        </div>
+
+                        <div class="test-detail">Message includes sender, recipient, hash, signature and timestamp</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Complete message verification
+                            <span class="integrity-type message">MESSAGE</span>
+                        </div>
+
+                        <div class="test-detail">Verifies signature + message integrity</div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="integrity-section">
+            <div class="integrity-category rate">
+                <h3>
+                    <span class="icon">⚡</span>
+                    ⚡ Rate Limiting Validation
+                    <span style="color: var(--success); font-size: 0.7em; margin-left: auto;">
+                        (4/4 passed)
+                    </span>
+                </h3>
+                
+                <p>Token bucket algorithm provides DoS protection by limiting requests per second. Burst size allows short spikes while maintaining overall limits.</p>
+                
+                <div class="test-grid">
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Rate limiter initialization
+                            <span class="integrity-type rate">RATE</span>
+                        </div>
+
+                        <div class="test-detail">Configurable requests per second and burst size</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Token acquisition
+                            <span class="integrity-type rate">RATE</span>
+                        </div>
+
+                        <div class="test-detail">Tokens are acquired for each request</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Non-blocking try_acquire
+                            <span class="integrity-type rate">RATE</span>
+                        </div>
+
+                        <div class="test-detail">Attempt acquire without blocking</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Rate limit statistics
+                            <span class="integrity-type rate">RATE</span>
+                        </div>
+
+                        <div class="test-detail">Get current rate limit stats</div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="integrity-section">
+            <div class="integrity-category retry">
+                <h3>
+                    <span class="icon">🔄</span>
+                    🔄 Retry Logic Validation
+                    <span style="color: var(--success); font-size: 0.7em; margin-left: auto;">
+                        (4/4 passed)
+                    </span>
+                </h3>
+                
+                <p>Exponential backoff ensures reliable communication with transient failures. Configurable attempts, backoff factor, and delay prevent overwhelming failing services.</p>
+                
+                <div class="test-grid">
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Retry on success
+                            <span class="integrity-type retry">RETRY</span>
+                        </div>
+
+                        <div class="test-detail">Function succeeds without retry</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Retry with eventual success
+                            <span class="integrity-type retry">RETRY</span>
+                        </div>
+
+                        <div class="test-detail">Retries until success</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Retry exhausted
+                            <span class="integrity-type retry">RETRY</span>
+                        </div>
+
+                        <div class="test-detail">All attempts fail after max retries</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Retry with specific exceptions
+                            <span class="integrity-type retry">RETRY</span>
+                        </div>
+
+                        <div class="test-detail">Only retries specified exception types</div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="integrity-section">
+            <div class="integrity-category storage">
+                <h3>
+                    <span class="icon">💾</span>
+                    💾 Storage & Data Validation
+                    <span style="color: var(--success); font-size: 0.7em; margin-left: auto;">
+                        (4/4 passed)
+                    </span>
+                </h3>
+                
+                <p>LocalStorage provides fallback when Fabric is unavailable. Message TTL and automatic cleanup ensure stale data doesn't accumulate.</p>
+                
+                <div class="test-grid">
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            LocalStorage initialization
+                            <span class="integrity-type storage">STORAGE</span>
+                        </div>
+
+                        <div class="test-detail">Creates storage directory for data</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Save and get data
+                            <span class="integrity-type storage">STORAGE</span>
+                        </div>
+
+                        <div class="test-detail">JSON serialization of data</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Participant revocation
+                            <span class="integrity-type storage">STORAGE</span>
+                        </div>
+
+                        <div class="test-detail">Immediately effective revocation</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Message TTL and expiration
+                            <span class="integrity-type storage">STORAGE</span>
+                        </div>
+
+                        <div class="test-detail">Messages expire after TTL</div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>wFabricSecurity - Zero Trust Security System</strong></p>
+            <p>📅 2026-03-21 02:15:11 | 🐍 Python 3.13.5</p>
+            <p>🔗 <a href="https://github.com/wisrovi/wFabricSecurity">github.com/wisrovi/wFabricSecurity</a></p>
+            <p style="margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 15px;">
+                <strong>Integrity Validations Implemented:</strong><br>
+                ✅ Code Integrity (SHA-256) | ✅ Digital Signatures (ECDSA) | ✅ Communication Permissions<br>
+                ✅ Message Integrity | ✅ Rate Limiting | ✅ Retry Logic | ✅ Storage Validation
+            </p>
+        </div>
+    </div>
+</body>
+</html>
