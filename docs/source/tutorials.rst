@@ -1,87 +1,124 @@
+=========
 Tutorials
-==========
+=========
 
 This section provides step-by-step tutorials for common use cases.
 
+|
+
+-----------------------------------------------
 Tutorial 1: Basic Master-Slave Communication
----------------------------------------------
+-----------------------------------------------
+
+|
 
 Objective
-~~~~~~~~~
+~~~~~~~~
 
 Set up a basic Master-Slave communication with Zero Trust verification.
 
+|
+
 Steps
-~~~~~~
+~~~~~
 
-1. **Initialize Master Node**
+|
 
-   .. code-block:: python
+**1. Initialize Master Node**
 
-      from wFabricSecurity import FabricSecurity
+|
 
-      master = FabricSecurity(me="CN=Master")
+.. code-block:: python
 
-      # Register identity
-      master.register_identity()
+   from wFabricSecurity import FabricSecurity
 
-      # Register code
-      master.register_code(["master.py"], "1.0.0")
+   master = FabricSecurity(me="CN=Master")
 
-2. **Initialize Slave Node**
+   # Register identity
+   master.register_identity()
 
-   .. code-block:: python
+   # Register code
+   master.register_code(["master.py"], "1.0.0")
 
-      from wFabricSecurity import FabricSecurity
+|
 
-      slave = FabricSecurity(me="CN=Slave")
+**2. Initialize Slave Node**
 
-      # Register identity
-      slave.register_identity()
+|
 
-      # Register code
-      slave.register_code(["slave.py"], "1.0.0")
+.. code-block:: python
 
-3. **Configure Permissions**
+   from wFabricSecurity import FabricSecurity
 
-   .. code-block:: python
+   slave = FabricSecurity(me="CN=Slave")
 
-      # On master node
-      master.register_communication("CN=Master", "CN=Slave")
+   # Register identity
+   slave.register_identity()
 
-4. **Send Audited Message**
+   # Register code
+   slave.register_code(["slave.py"], "1.0.0")
 
-   .. code-block:: python
+|
 
-      message = master.create_message(
-          recipient="CN=Slave",
-          content='{"task": "process_data", "payload": {...}}'
-      )
+**3. Configure Permissions**
 
-      # Send to slave via HTTP, etc.
+|
 
-5. **Verify and Process on Slave**
+.. code-block:: python
 
-   .. code-block:: python
+   # On master node
+   master.register_communication("CN=Master", "CN=Slave")
 
-      # On slave node
-      if slave.verify_message(message):
-          # Process the message
-          result = process(message.content)
-      else:
-          # Reject the message
-          raise SecurityError("Invalid message")
+|
 
+**4. Send Audited Message**
+
+|
+
+.. code-block:: python
+
+   message = master.create_message(
+       recipient="CN=Slave",
+       content='{"task": "process_data", "payload": {...}}'
+   )
+
+   # Send to slave via HTTP, etc.
+
+|
+
+**5. Verify and Process on Slave**
+
+|
+
+.. code-block:: python
+
+   # On slave node
+   if slave.verify_message(message):
+       # Process the message
+       result = process(message.content)
+   else:
+       # Reject the message
+       raise SecurityError("Invalid message")
+
+|
+
+----------------------------
 Tutorial 2: Rate-Limited API
 ----------------------------
 
+|
+
 Objective
-~~~~~~~~~
+~~~~~~~~
 
 Create an API endpoint with rate limiting and retry logic.
 
+|
+
 Setup
-~~~~~~
+~~~~~
+
+|
 
 .. code-block:: python
 
@@ -96,8 +133,12 @@ Setup
        # Process with potential Fabric call
        return fabric_invoke("ProcessTask", data)
 
+|
+
 Decorator Usage
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: python
 
@@ -113,16 +154,25 @@ Decorator Usage
        except Exception as e:
            return {"error": str(e)}, 500
 
+|
+
+-----------------------------------------
 Tutorial 3: Code Integrity Verification
 -----------------------------------------
 
+|
+
 Objective
-~~~~~~~~~
+~~~~~~~~
 
 Implement automatic code integrity verification for sensitive operations.
 
+|
+
 Setup
-~~~~~~
+~~~~~
+
+|
 
 .. code-block:: python
 
@@ -134,8 +184,12 @@ Setup
    # Register code on startup
    verifier.register_code(["sensitive_module.py"], "1.0.0")
 
+|
+
 Verification Middleware
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: python
 
@@ -154,16 +208,25 @@ Verification Middleware
        # This code is verified before execution
        return expensive_operation(data)
 
+|
+
+-----------------------------------------
 Tutorial 4: Message Expiration and Cleanup
 -----------------------------------------
 
+|
+
 Objective
-~~~~~~~~~
+~~~~~~~~
 
 Implement automatic message expiration for temporary data.
 
+|
+
 Setup
-~~~~~~
+~~~~~
+
+|
 
 .. code-block:: python
 
@@ -171,8 +234,12 @@ Setup
 
    manager = MessageManager(gateway, ttl_seconds=3600)
 
+|
+
 Creating Messages with TTL
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: python
 
@@ -187,8 +254,12 @@ Creating Messages with TTL
 
    print(f"Expires at: {msg.expires_at}")
 
+|
+
 Automatic Cleanup
 ~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: python
 
@@ -206,16 +277,25 @@ Automatic Cleanup
    cleanup_thread = threading.Thread(target=cleanup_task, daemon=True)
    cleanup_thread.start()
 
+|
+
+----------------------------------
 Tutorial 5: Participant Revocation
 ----------------------------------
 
+|
+
 Objective
-~~~~~~~~~
+~~~~~~~~
 
 Implement immediate participant revocation for compromised identities.
 
+|
+
 Setup
-~~~~~~
+~~~~~
+
+|
 
 .. code-block:: python
 
@@ -223,8 +303,12 @@ Setup
 
    manager = PermissionManager(gateway)
 
+|
+
 Register Participant
 ~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: python
 
@@ -234,8 +318,12 @@ Register Participant
        "allowed_communications": ["CN=OtherUser"]
    })
 
+|
+
 Revoke Participant
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: python
 

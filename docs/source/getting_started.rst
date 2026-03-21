@@ -1,8 +1,16 @@
+.. include:: ../README.md
+   :start-line: 1
+   :end-line: 50
+
+===============
 Getting Started
-==============
+===============
 
 This guide will help you get started with wFabricSecurity.
 
+|
+
+-------------
 Prerequisites
 -------------
 
@@ -12,17 +20,24 @@ Before installing wFabricSecurity, ensure you have:
 * **pip** - Python package manager
 * **Git** - For cloning the repository
 
+|
+
 Optional Requirements
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 * **Docker & Docker Compose** - For running Hyperledger Fabric
 * **Hyperledger Fabric 2.x** - For blockchain backend storage
 
+|
+
+-------------
 Core Concepts
 -------------
 
+|
+
 Zero Trust Model
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 wFabricSecurity implements a Zero Trust security model with the following principles:
 
@@ -30,8 +45,10 @@ wFabricSecurity implements a Zero Trust security model with the following princi
 2. **Least Privilege** - Participants only have necessary permissions
 3. **Assume Breach** - All communications are encrypted and verified
 
+|
+
 Key Components
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 .. list-table::
    :header-rows: 1
@@ -50,26 +67,31 @@ Key Components
    * - ``RateLimiter``
      - Token bucket rate limiting for DoS protection
 
+|
+
+-------------
 First Steps
-----------
+-------------
 
-1. Install the package
-2. Initialize the security system
-3. Register your identity and code
-4. Configure communication permissions
-5. Start creating and verifying messages
+|
 
-Next Steps
----------
+#. Install the package
+#. Initialize the security system
+#. Register your identity and code
+#. Configure communication permissions
+#. Start creating and verifying messages
 
-* Continue to :doc:`installation` for detailed setup instructions
-* See :doc:`usage` for practical examples
-* Explore :doc:`api_reference` for complete API documentation
+|
 
+-------------
 Quick Example
 -------------
 
+|
+
 Here's a complete example demonstrating the core workflow:
+
+|
 
 .. code-block:: python
 
@@ -99,3 +121,15 @@ Here's a complete example demonstrating the core workflow:
    # Step 5: Verify the message (on the receiving end)
    if security.verify_message(message):
        print("Message is authentic and unaltered!")
+
+|
+
+-------------
+Next Steps
+-------------
+
+|
+
+* Continue to :doc:`installation` for detailed setup instructions
+* See :doc:`usage` for practical examples
+* Explore :doc:`api_reference` for complete API documentation

@@ -1,17 +1,37 @@
+# Read the Docs Configuration File
+# https://docs.readthedocs.io/en/stable/config-file/v2.html
+
 version: 2
 
 build:
   os: ubuntu-22.04
   tools:
-    python: "3.10"
+    python: "3.11"
 
-# Configuración para construir la documentación
 sphinx:
-  configuration: docs/conf.py
+  builder: html
+  configuration: docs/source/conf.py
+  fail_on_warning: false
 
-# Instalación de dependencias para la doc
 python:
   install:
+    - requirements: docs/requirements.txt
     - method: pip
       path: .
-    - requirements: docs/requirements.txt
+  system_packages: false
+
+formats:
+  - pdf
+  - epub
+
+# Submodules settings
+submodules:
+  include: []
+  exclude: [".git"]
+
+# Announcements
+announcements:
+  - >
+    wFabricSecurity v1.0.0 is now available! 
+    See the <a href="https://wFabricSecurity.readthedocs.io/en/latest/changelog.html">changelog</a> 
+    for details.

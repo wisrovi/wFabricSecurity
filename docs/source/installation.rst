@@ -1,21 +1,33 @@
+============
 Installation
 ============
 
 This guide provides detailed instructions for installing and configuring wFabricSecurity.
 
+|
+
+---------------------------
 Standard Installation
---------------------
+---------------------------
+
+|
 
 Clone the Repository
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: bash
 
    git clone https://github.com/wisrovi/wFabricSecurity.git
    cd wFabricSecurity
 
+|
+
 Create Virtual Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: bash
 
@@ -28,31 +40,50 @@ Create Virtual Environment
    # Activate (Windows)
    venv\Scripts\activate
 
+|
+
 Install Package
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: bash
 
    pip install -e .
 
+|
+
 Install Development Dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: bash
 
    pip install pylint black isort pytest pytest-cov
 
+|
+
 Verify Installation
 ~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: python
 
    python -c "from wFabricSecurity import FabricSecurity; print('Installation successful!')"
 
+|
+
+-------------------
 Docker Installation
 -------------------
 
+|
+
 Using Docker for development:
+
+|
 
 .. code-block:: dockerfile
 
@@ -64,18 +95,27 @@ Using Docker for development:
 
    CMD ["python", "-c", "from wFabricSecurity import FabricSecurity; print('OK')"]
 
+|
+
+---------------------------
 Hyperledger Fabric Setup
-------------------------
+---------------------------
+
+|
 
 Prerequisites
-~~~~~~~~~~~~~
+~~~~~~~~~~~~
 
 * Docker Engine 20.10+
 * Docker Compose v2+
 * 4GB RAM minimum for Fabric
 
+|
+
 Setup Commands
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+
+|
 
 .. code-block:: bash
 
@@ -90,13 +130,22 @@ Setup Commands
    # Verify network status
    docker ps
 
+|
+
+---------------
 Configuration
--------------
+---------------
+
+|
 
 Environment Variables
 ~~~~~~~~~~~~~~~~~~~~
 
+|
+
 Set these environment variables for production deployments:
+
+|
 
 .. code-block:: bash
 
@@ -110,10 +159,16 @@ Set these environment variables for production deployments:
    export RATE_LIMIT_RPS=100
    export RETRY_MAX_ATTEMPTS=3
 
+|
+
 Configuration File
 ~~~~~~~~~~~~~~~~~
 
+|
+
 Create a ``config.yaml`` file:
+
+|
 
 .. code-block:: yaml
 
@@ -141,11 +196,18 @@ Create a ``config.yaml`` file:
    cert_cache_size: 100
    cert_cache_ttl_seconds: 3600
 
+|
+
+---------------
 Troubleshooting
---------------
+---------------
+
+|
 
 Installation Issues
 ~~~~~~~~~~~~~~~~~~
+
+|
 
 .. list-table::
    :header-rows: 1
@@ -159,8 +221,12 @@ Installation Issues
    * - ``cryptography`` module not found
      - Run ``pip install cryptography``
 
+|
+
 Fabric Issues
 ~~~~~~~~~~~~~
+
+|
 
 .. list-table::
    :header-rows: 1

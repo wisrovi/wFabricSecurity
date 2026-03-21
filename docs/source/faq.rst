@@ -1,13 +1,19 @@
+===
 FAQ
 ===
 
 Frequently Asked Questions about wFabricSecurity.
 
+|
+
+-----------------
 General Questions
 -----------------
 
+|
+
 What is Zero Trust?
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 **Zero Trust** is a security model that eliminates automatic trust. Every request must be verified, regardless of its origin. In wFabricSecurity:
 
@@ -15,6 +21,8 @@ What is Zero Trust?
 * Every participant's code integrity is checked
 * Communication permissions are explicitly granted
 * All transactions are recorded immutably
+
+|
 
 What is Hyperledger Fabric?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -26,10 +34,14 @@ Hyperledger Fabric is an enterprise-grade permissioned distributed ledger. wFabr
 * Track task completions
 * Provide audit trails
 
+|
+
 Do I need Hyperledger Fabric?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **No**, Fabric is optional. wFabricSecurity includes a local storage fallback that works without Fabric:
+
+|
 
 .. code-block:: python
 
@@ -38,17 +50,28 @@ Do I need Hyperledger Fabric?
    
    # Automatically uses LocalStorage when Fabric unavailable
 
+|
+
+---------------------
 Installation Questions
 ---------------------
 
+|
+
 How do I install wFabricSecurity?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: bash
 
    pip install -e .
 
+|
+
 Or clone and install:
+
+|
 
 .. code-block:: bash
 
@@ -56,52 +79,82 @@ Or clone and install:
    cd wFabricSecurity
    pip install -e .
 
+|
+
 What are the Python version requirements?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Python 3.10 or higher is required.
 
+|
+
 How do I verify the installation?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: python
 
    python -c "from wFabricSecurity import FabricSecurity; print('OK')"
 
+|
+
+-----------------
 Security Questions
 -----------------
+
+|
 
 How does code integrity verification work?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1. SHA-256 hash of source files is computed
-2. Hash is registered in Fabric (or local storage)
-3. Before operations, hash is recomputed and compared
-4. If different, ``CodeIntegrityError`` is raised
+|
+
+#. SHA-256 hash of source files is computed
+#. Hash is registered in Fabric (or local storage)
+#. Before operations, hash is recomputed and compared
+#. If different, ``CodeIntegrityError`` is raised
+
+|
 
 How are signatures verified?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1. Sender signs with their ECDSA private key
-2. Receiver gets sender's public certificate
-3. Signature is verified using the public key
-4. If invalid, ``SignatureError`` is raised
+|
+
+#. Sender signs with their ECDSA private key
+#. Receiver gets sender's public certificate
+#. Signature is verified using the public key
+#. If invalid, ``SignatureError`` is raised
+
+|
 
 What happens if a participant is compromised?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+|
+
 Call ``revoke_participant()`` to immediately block all communications:
+
+|
 
 .. code-block:: python
 
    security.revoke_participant("CN=CompromisedUser")
    # All future attempts will raise RevocationError
 
+|
+
+--------------------
 Performance Questions
 --------------------
 
+|
+
 How does rate limiting work?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|
 
 Token bucket algorithm:
 
@@ -110,10 +163,16 @@ Token bucket algorithm:
 * Tokens consumed on each request
 * Returns error when no tokens available
 
+|
+
 How does certificate caching improve performance?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+|
+
 Certificates are cached with TTL:
+
+|
 
 .. code-block:: python
 
@@ -123,8 +182,12 @@ Certificates are cached with TTL:
    # Subsequent accesses: returns from cache
    cert = identity_manager.get_certificate("CN=User")  # Fast!
 
+|
+
 How do retries handle failures?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|
 
 Exponential backoff:
 
@@ -134,28 +197,45 @@ Exponential backoff:
 * Attempt 4: 2.0s delay
 * ... and so on
 
+|
+
+-----------------------
 Configuration Questions
 -----------------------
+
+|
 
 How do I configure the library?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+|
+
 Environment variables:
+
+|
 
 .. code-block:: bash
 
    export FABRIC_PEER_URL=localhost:7051
    export FABRIC_MSP_PATH=/path/to/msp
 
+|
+
 Or ``config.yaml``:
+
+|
 
 .. code-block:: yaml
 
    fabric_channel: mychannel
    rate_limit_requests_per_second: 100
 
+|
+
 How do I customize rate limits?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: python
 
@@ -165,8 +245,12 @@ How do I customize rate limits?
        rate_limit_burst=100  # Allow 100 extra requests
    )
 
+|
+
 How do I change message TTL?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: python
 
@@ -175,37 +259,63 @@ How do I change message TTL?
        message_ttl=7200  # 2 hours
    )
 
+|
+
+-------------------------
 Troubleshooting Questions
 -------------------------
+
+|
 
 Why am I getting CodeIntegrityError?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+|
+
 The code has been modified since registration:
 
-1. Recompute hash: ``security.compute_code_hash(["file.py"])``
-2. Re-register: ``security.register_code(["file.py"], "1.0.1")``
+|
+
+#. Recompute hash: ``security.compute_code_hash(["file.py"])``
+#. Re-register: ``security.register_code(["file.py"], "1.0.1")``
+
+|
 
 Why am I getting PermissionDeniedError?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+|
+
 The communication permission doesn't exist:
 
-1. Check permissions: ``security.can_communicate_with(sender, recipient)``
-2. Register permission: ``security.register_communication(sender, recipient)``
+|
+
+#. Check permissions: ``security.can_communicate_with(sender, recipient)``
+#. Register permission: ``security.register_communication(sender, recipient)``
+
+|
 
 Why is Fabric invoke failing?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+|
+
 Check Fabric status:
+
+|
 
 .. code-block:: bash
 
    docker ps --filter "name=peer0\|orderer"
    docker logs orderer.net
 
+|
+
+-------------
 Common Issues
-~~~~~~~~~~~~~
+-------------
+
+|
 
 .. list-table::
    :header-rows: 1

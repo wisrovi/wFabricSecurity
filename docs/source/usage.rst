@@ -1,13 +1,21 @@
+===============
 Usage Examples
 ===============
 
 This section provides practical examples for using wFabricSecurity.
 
+|
+
+-------------------------
 Basic Zero Trust System
------------------------
+-------------------------
+
+|
 
 Complete Security Workflow
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: python
 
@@ -38,11 +46,18 @@ Complete Security Workflow
    if security.verify_message(message):
        print("Message is authentic!")
 
+|
+
+---------------
 Code Integrity
--------------
+---------------
+
+|
 
 Registering and Verifying Code
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: python
 
@@ -67,11 +82,18 @@ Registering and Verifying Code
    except CodeIntegrityError:
        print("Code has been tampered with!")
 
+|
+
+-----------------
 Digital Signatures
 -----------------
 
+|
+
 ECDSA Signing and Verification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: python
 
@@ -93,11 +115,18 @@ ECDSA Signing and Verification
    is_valid = service.verify(data, signature, cert_getter, signer_id)
    print(f"Signature valid: {is_valid}")
 
+|
+
+-------------------------
 Communication Permissions
------------------------
+-------------------------
+
+|
 
 Permission Management
 ~~~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: python
 
@@ -119,11 +148,18 @@ Permission Management
    except PermissionDeniedError as e:
        print(f"Permission denied: {e}")
 
+|
+
+---------------
 Rate Limiting
--------------
+---------------
+
+|
 
 Token Bucket Rate Limiter
 ~~~~~~~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: python
 
@@ -147,11 +183,18 @@ Token Bucket Rate Limiter
    print(f"Available tokens: {stats['available_tokens']}")
    print(f"Recent requests (1s): {stats['recent_requests_1s']}")
 
+|
+
+-------------
 Retry Logic
------------
+-------------
+
+|
 
 Exponential Backoff
 ~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: python
 
@@ -169,11 +212,18 @@ Exponential Backoff
    result = unreliable_fabric_call()
    print(f"Result: {result}")
 
+|
+
+-----------------
 Message Management
 -----------------
 
+|
+
 Creating and Verifying Messages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: python
 
@@ -198,11 +248,18 @@ Creating and Verifying Messages
    expired_count = manager.cleanup_expired_messages()
    print(f"Cleaned up {expired_count} expired messages")
 
+|
+
+-------------------------
 Master-Slave Decorators
-------------------------
+-------------------------
+
+|
 
 Audited Task Delegation
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+
+|
 
 .. code-block:: python
 
