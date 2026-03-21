@@ -2,6 +2,8 @@
 
 **Hyperledger Fabric network setup and configuration**
 
+> **IMPORTANT**: View the complete Integrity Validation Matrix at **[../index.html](../index.html)** (or at https://wisrovi.github.io/wFabricSecurity/)
+
 ## Overview
 
 This directory contains the Docker-based Hyperledger Fabric network configuration, chaincode (smart contracts), and organization MSP certificates.

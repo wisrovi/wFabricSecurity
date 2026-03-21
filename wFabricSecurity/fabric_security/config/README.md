@@ -2,6 +2,8 @@
 
 **Settings management for wFabricSecurity**
 
+> **IMPORTANT**: View the complete Integrity Validation Matrix at **[../../../index.html](../../../index.html)** (or at https://wisrovi.github.io/wFabricSecurity/)
+
 ## Overview
 
 This module handles all configuration for the library, supporting both YAML files and environment variables with automatic fallback to defaults.

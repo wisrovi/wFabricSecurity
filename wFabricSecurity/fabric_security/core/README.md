@@ -2,6 +2,8 @@
 
 **Core data structures and types for wFabricSecurity**
 
+> **IMPORTANT**: View the complete Integrity Validation Matrix at **[../../../index.html](../../../index.html)** (or at https://wisrovi.github.io/wFabricSecurity/)
+
 ## Overview
 
 This module contains the fundamental data structures, enumerations, and exception types used throughout the library.

@@ -4,9 +4,10 @@
 
 ![Python Version](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
-![Code Quality](https://img.shields.io/badge/Code%20Quality-Pylint%209.29%2F10-yellow.svg)
-![Tests](https://img.shields.io/badge/Tests-258%20passed-brightgreen.svg)
-![Coverage](https://img.shields.io/badge/Coverage-85%25-brightgreen.svg)
+![Tests](https://img.shields.io/badge/Tests-203%20passed-brightgreen.svg)
+![Coverage](https://img.shields.io/badge/Coverage-69%25-yellow.svg)
+
+> **IMPORTANT**: View the complete Integrity Validation Matrix at **[index.html](index.html)** (GitHub Pages: https://wisrovi.github.io/wFabricSecurity/)
 
 A comprehensive distributed cryptographic security library providing identity verification, code integrity validation, communication permissions, message integrity, rate limiting, retry mechanisms, and immutable audit trails on Hyperledger Fabric blockchain.
 

@@ -2,6 +2,8 @@
 
 **Functional examples demonstrating wFabricSecurity usage**
 
+> **IMPORTANT**: View the complete Integrity Validation Matrix at **[../index.html](../index.html)** (or at https://wisrovi.github.io/wFabricSecurity/)
+
 ## Overview
 
 This directory contains complete working examples demonstrating how to use wFabricSecurity in different scenarios: JSON data processing, image handling, and P2P sensitive data.

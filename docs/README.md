@@ -2,6 +2,8 @@
 
 **Sphinx documentation for wFabricSecurity**
 
+> **IMPORTANT**: View the complete Integrity Validation Matrix at **[../index.html](../index.html)** (or at https://wisrovi.github.io/wFabricSecurity/)
+
 ## Overview
 
 This directory contains the Sphinx-based documentation source files for the project.

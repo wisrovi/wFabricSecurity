@@ -2,6 +2,8 @@
 
 **Zero Trust security validations for wFabricSecurity**
 
+> **IMPORTANT**: View the complete Integrity Validation Matrix at **[../../../index.html](../../../index.html)** (or at https://wisrovi.github.io/wFabricSecurity/)
+
 ## Overview
 
 This module implements the core security validations for the Zero Trust model. Each validation type ensures specific security properties are maintained.

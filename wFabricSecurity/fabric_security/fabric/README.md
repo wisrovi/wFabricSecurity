@@ -2,6 +2,8 @@
 
 **Hyperledger Fabric blockchain integration for wFabricSecurity**
 
+> **IMPORTANT**: View the complete Integrity Validation Matrix at **[../../../index.html](../../../index.html)** (or at https://wisrovi.github.io/wFabricSecurity/)
+
 ## Overview
 
 This module provides integration with Hyperledger Fabric blockchain for immutable audit trails, participant registration, and code hash storage.

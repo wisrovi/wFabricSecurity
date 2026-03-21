@@ -2,6 +2,8 @@
 
 **Core library module for wFabricSecurity**
 
+> **IMPORTANT**: View the complete Integrity Validation Matrix at **[../../index.html](../../index.html)** (or at https://wisrovi.github.io/wFabricSecurity/)
+
 ## Overview
 
 This module contains the core implementation of the wFabricSecurity library. It provides all the security, cryptographic, and blockchain integration functionality.

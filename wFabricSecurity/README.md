@@ -2,6 +2,8 @@
 
 **Zero Trust Security System for Hyperledger Fabric**
 
+> **IMPORTANT**: View the complete Integrity Validation Matrix at **[../../index.html](../../index.html)** (or at https://wisrovi.github.io/wFabricSecurity/)
+
 ## Overview
 
 This package contains the core implementation of the wFabricSecurity library. It provides cryptographic security, identity management, and blockchain integration for distributed applications.

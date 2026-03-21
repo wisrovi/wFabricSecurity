@@ -2,6 +2,8 @@
 
 **Hashing, signing, and identity management for wFabricSecurity**
 
+> **IMPORTANT**: View the complete Integrity Validation Matrix at **[../../../index.html](../../../index.html)** (or at https://wisrovi.github.io/wFabricSecurity/)
+
 ## Overview
 
 This module provides the cryptographic foundation for the Zero Trust security system, including SHA-256/BLAKE2 hashing, ECDSA signing/verification, and X.509 certificate management.

@@ -2,6 +2,8 @@
 
 **Storage backends for wFabricSecurity**
 
+> **IMPORTANT**: View the complete Integrity Validation Matrix at **[../../../index.html](../../../index.html)** (or at https://wisrovi.github.io/wFabricSecurity/)
+
 ## Overview
 
 This module provides storage backends for persisting data. It includes both a Hyperledger Fabric backend (primary) and a Local JSON file backend (fallback).
