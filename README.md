@@ -247,12 +247,27 @@ flowchart TB
 | `security/retry.py` | Exponential backoff retry decorator |
 | `storage/local.py` | Local JSON file storage fallback |
 | `storage/fabric_storage.py` | Hyperledger Fabric storage backend |
-| `test/test_library.py` | 228 unit tests |
+| `test/test_library.py` | 258 unit tests |
 | `examples/` | Functional examples (JSON, Image, P2P) |
 
 ---
 
-## Features
+## 🔐 Integrity Validation Matrix
+
+The library implements **10 core integrity validation categories** ensuring complete Zero Trust security:
+
+| Category | Icon | Description | Coverage |
+|----------|------|-------------|----------|
+| **Configuration** | ⚙️ | Settings management (YAML + env vars) with validation | 94-100% |
+| **Cryptographic Services** | 🔐 | SHA-256, BLAKE2 hashing, ECDSA signing, X.509 certificates | 75-91% |
+| **Code Integrity** | 🔐 | SHA-256 hash verification of source code to detect tampering | 78% |
+| **Digital Signatures** | 🔑 | ECDSA cryptographic signatures for message authentication | 77% |
+| **Communication Permissions** | 🛡️ | Fine-grained access control (bidirectional, outbound, inbound) | 89% |
+| **Message Integrity** | 📝 | Hash verification to detect transmission alterations | 71% |
+| **Rate Limiting** | ⚡ | Token bucket algorithm for DoS protection | 88% |
+| **Retry Logic** | 🔄 | Exponential backoff with configurable attempts | 78% |
+| **Storage Validation** | 💾 | Local and Fabric storage integrity checks | 77-95% |
+| **Fabric Integration** | ⛓️ | Hyperledger Fabric gateway, network, and contract | 73-95% |
 
 ### Security Features
 
@@ -656,7 +671,22 @@ firefox htmlcov/index.html
 | Report | Location | Description |
 |--------|----------|-------------|
 | **Coverage HTML** | `htmlcov/index.html` | Detailed line-by-line coverage analysis |
+| **Integrity Matrix HTML** | `test/reports/library_test_report_*.html` | 258 tests with integrity validation categories |
 | **Test Results** | `test/test_library.py` | 258 unit tests with assertions |
+
+### Generating Test Reports
+
+```bash
+# Generate integrity validation matrix report
+python test/test_report_generator.py
+
+# Generate coverage report
+python -m pytest test/test_library.py --cov=wFabricSecurity --cov-report=html
+
+# Open reports
+open test/reports/library_test_report_*.html
+open htmlcov/index.html
+```
 
 ---
 

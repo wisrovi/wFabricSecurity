@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>wFabricSecurity - Library Test Report</title>
+    <style>
+        :root {
+            --primary: #667eea;
+            --primary-dark: #764ba2;
+            --success: #11998e;
+            --success-light: #38ef7d;
+            --danger: #eb3349;
+            --danger-light: #f45c43;
+            --warning: #f39c12;
+            --info: #3498db;
+            --bg-dark: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            --card-bg: #ffffff;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-primary);
+        }
+        
+        .container { max-width: 1600px; margin: 0 auto; }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px;
+            border-radius: 25px;
+            margin-bottom: 40px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.4);
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header .subtitle {
+            font-size: 1.4em;
+            opacity: 0.95;
+            margin-bottom: 25px;
+        }
+        
+        .header .meta {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .header .meta span {
+            background: rgba(255,255,255,0.2);
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 1em;
+        }
+        
+        .status-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 25px 60px;
+            border-radius: 50px;
+            font-size: 1.6em;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .status-badge.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        
+        .status-badge.failure {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        
+        .stat-card .icon { font-size: 2.8em; margin-bottom: 15px; }
+        .stat-card .number { font-size: 3.2em; font-weight: bold; }
+        .stat-card .label { color: var(--text-secondary); margin-top: 12px; font-size: 1.1em; }
+        
+        .stat-card.passed { border-top: 6px solid var(--success); }
+        .stat-card.passed .number { color: var(--success); }
+        
+        .stat-card.failed { border-top: 6px solid var(--danger); }
+        .stat-card.failed .number { color: var(--danger); }
+        
+        .stat-card.skipped { border-top: 6px solid var(--warning); }
+        .stat-card.skipped .number { color: var(--warning); }
+        
+        .stat-card.total { border-top: 6px solid var(--primary); }
+        .stat-card.total .number { color: var(--primary); }
+        
+        .stat-card.rate { border-top: 6px solid var(--success-light); }
+        .stat-card.rate .number { color: var(--success-light); }
+        
+        .stat-card.coverage { border-top: 6px solid var(--info); }
+        .stat-card.coverage .number { color: var(--info); }
+        
+        .coverage-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+        
+        .progress-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .progress-bar {
+            display: flex;
+            height: 45px;
+            border-radius: 25px;
+            overflow: hidden;
+            margin: 25px 0;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .progress-passed {
+            background: linear-gradient(90deg, #11998e, #38ef7d);
+            transition: width 0.5s;
+        }
+        
+        .progress-failed {
+            background: linear-gradient(90deg, #eb3349, #f45c43);
+        }
+        
+        .progress-skipped {
+            background: linear-gradient(90deg, #f39c12, #f1c40f);
+        }
+        
+        .progress-legend {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-top: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        
+        .matrix-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .integrity-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .integrity-category {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 6px solid var(--primary);
+        }
+        
+        .integrity-category.code { border-left-color: #667eea; }
+        .integrity-category.signature { border-left-color: #11998e; }
+        .integrity-category.permission { border-left-color: #f39c12; }
+        .integrity-category.message { border-left-color: #eb3349; }
+        .integrity-category.rate { border-left-color: #9b59b6; }
+        .integrity-category.retry { border-left-color: #3498db; }
+        .integrity-category.storage { border-left-color: #e67e22; }
+        .integrity-category.config { border-left-color: #16a085; }
+        .integrity-category.crypto { border-left-color: #8e44ad; }
+        .integrity-category.fabric { border-left-color: #2980b9; }
+        
+        .integrity-category h3 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .integrity-category h3 .icon { font-size: 1.2em; }
+        
+        .integrity-category p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 10px;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 15px;
+        }
+        
+        .test-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 18px;
+            border-left: 5px solid var(--success);
+            transition: all 0.3s;
+        }
+        
+        .test-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .test-item.passed { border-left-color: var(--success); }
+        .test-item.failed { border-left-color: var(--danger); background: #fff5f5; }
+        .test-item.skipped { border-left-color: var(--warning); background: #fffbf0; }
+        
+        .test-item .test-name {
+            font-weight: bold;
+            font-size: 1.05em;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .test-item .test-status {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        
+        .test-item .test-status.passed { background: #d4edda; color: #155724; }
+        .test-item .test-status.failed { background: #f8d7da; color: #721c24; }
+        .test-item .test-status.skipped { background: #fff3cd; color: #856404; }
+        
+        .test-item .test-detail {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+        
+        .test-item .integrity-type {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 8px;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .test-item .integrity-type.code { background: #e8eaf6; color: #3f51b5; }
+        .test-item .integrity-type.signature { background: #e0f2f1; color: #00695c; }
+        .test-item .integrity-type.permission { background: #fff8e1; color: #f57f17; }
+        .test-item .integrity-type.message { background: #ffebee; color: #c62828; }
+        .test-item .integrity-type.rate { background: #f3e5f5; color: #7b1fa2; }
+        .test-item .integrity-type.retry { background: #e3f2fd; color: #1565c0; }
+        .test-item .integrity-type.storage { background: #fff3e0; color: #e65100; }
+        .test-item .integrity-type.config { background: #e8f5e9; color: #2e7d32; }
+        .test-item .integrity-type.crypto { background: #f3e5f5; color: #7b1fa2; }
+        .test-item .integrity-type.fabric { background: #e3f2fd; color: #1565c0; }
+        
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .matrix-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 12px;
+            transition: transform 0.3s;
+        }
+        
+        .matrix-item:hover {
+            transform: scale(1.02);
+        }
+        
+        .matrix-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }
+        
+        .matrix-icon.code { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .matrix-icon.signature { background: linear-gradient(135deg, #11998e, #38ef7d); }
+        .matrix-icon.permission { background: linear-gradient(135deg, #f39c12, #f1c40f); }
+        .matrix-icon.message { background: linear-gradient(135deg, #eb3349, #f45c43); }
+        .matrix-icon.rate { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .matrix-icon.retry { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .matrix-icon.storage { background: linear-gradient(135deg, #e67e22, #d35400); }
+        .matrix-icon.config { background: linear-gradient(135deg, #16a085, #1abc9c); }
+        .matrix-icon.crypto { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
+        .matrix-icon.fabric { background: linear-gradient(135deg, #2980b9, #3498db); }
+        
+        .matrix-text h4 { margin-bottom: 5px; }
+        .matrix-text p { color: var(--text-secondary); font-size: 0.9em; }
+        
+        .footer {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            padding: 40px;
+            font-size: 0.95em;
+        }
+        
+        .footer a { color: var(--primary); text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .header, .integrity-section, .progress-section, .stat-card, .matrix-section {
+            animation: fadeIn 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🛡️ wFabricSecurity - Library Test Report</h1>
+            <div class="subtitle">Complete Unit Test Suite - 258 Tests</div>
+            <div class="meta">
+                <span>📅 2026-03-21 07:51:54</span>
+                <span>🐍 Python 3.13.5</span>
+                <span>📊 258 Tests Executed</span>
+                <span class="coverage-badge">📈 0% Coverage</span>
+            </div>
+        </div>
+        
+        <!-- Status Badge -->
+        <div class="status-section">
+            <div class="status-badge success">
+                ✅ ALL {total} TESTS PASSED
+            </div>
+        </div>
+        
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card passed">
+                <div class="icon">✅</div>
+                <div class="number">258</div>
+                <div class="label">Tests Passed</div>
+            </div>
+            <div class="stat-card failed">
+                <div class="icon">❌</div>
+                <div class="number">0</div>
+                <div class="label">Tests Failed</div>
+            </div>
+            <div class="stat-card skipped">
+                <div class="icon">⏭️</div>
+                <div class="number">0</div>
+                <div class="label">Tests Skipped</div>
+            </div>
+            <div class="stat-card total">
+                <div class="icon">📋</div>
+                <div class="number">258</div>
+                <div class="label">Total Executed</div>
+            </div>
+            <div class="stat-card rate">
+                <div class="icon">📈</div>
+                <div class="number">100.0%</div>
+                <div class="label">Pass Rate</div>
+            </div>
+            <div class="stat-card coverage">
+                <div class="icon">📊</div>
+                <div class="number">0%</div>
+                <div class="label">Coverage</div>
+            </div>
+        </div>
+        
+        <!-- Progress Section -->
+        <div class="progress-section">
+            <h2>📊 Test Results Distribution</h2>
+            <div class="progress-bar">
+                <div class="progress-passed" style="width: 100.0%"></div>
+                <div class="progress-failed" style="width: 0.0%"></div>
+                <div class="progress-skipped" style="width: 0.0%"></div>
+            </div>
+            <div class="progress-legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(90deg, #11998e, #38ef7d);"></div>
+                    <span>Passed (258)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(90deg, #eb3349, #f45c43);"></div>
+                    <span>Failed (0)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(90deg, #f39c12, #f1c40f);"></div>
+                    <span>Skipped (0)</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Integrity Validation Matrix -->
+        <div class="matrix-section">
+            <h2>🔐 Integrity Validation Matrix</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 25px;">
+                This library implements complete Zero Trust security validations. Each type of integrity check ensures that specific aspects of the system remain secure and unmodified.
+            </p>
+            <div class="matrix-grid">
+                <div class="matrix-item">
+                    <div class="matrix-icon code">🔐</div>
+                    <div class="matrix-text">
+                        <h4>Code Integrity</h4>
+                        <p>SHA-256 hash verification to detect tampering</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon signature">🔑</div>
+                    <div class="matrix-text">
+                        <h4>Signature Verification</h4>
+                        <p>ECDSA cryptographic signatures</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon permission">🛡️</div>
+                    <div class="matrix-text">
+                        <h4>Communication Permissions</h4>
+                        <p>Fine-grained access control</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon message">📝</div>
+                    <div class="matrix-text">
+                        <h4>Message Integrity</h4>
+                        <p>Hash verification for transmission</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon rate">⚡</div>
+                    <div class="matrix-text">
+                        <h4>Rate Limiting</h4>
+                        <p>Token bucket DoS protection</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon retry">🔄</div>
+                    <div class="matrix-text">
+                        <h4>Retry Logic</h4>
+                        <p>Exponential backoff</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon storage">💾</div>
+                    <div class="matrix-text">
+                        <h4>Storage Validation</h4>
+                        <p>Local and Fabric storage</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon config">⚙️</div>
+                    <div class="matrix-text">
+                        <h4>Configuration</h4>
+                        <p>Settings YAML/env management</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon crypto">🔐</div>
+                    <div class="matrix-text">
+                        <h4>Cryptographic Services</h4>
+                        <p>Hashing, signing, identity</p>
+                    </div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon fabric">⛓️</div>
+                    <div class="matrix-text">
+                        <h4>Fabric Integration</h4>
+                        <p>Gateway, network, contract</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="integrity-section">
+            <div class="integrity-category config">
+                <h3>
+                    <span class="icon">⚙️</span>
+                    ⚙️ Configuration & Settings
+                    <span style="color: var(--success); font-size: 0.7em; margin-left: auto;">
+                        (5/5 passed)
+                    </span>
+                </h3>
+                
+                <p>Settings management with YAML configuration and environment variables support. Default values, validation, and environment variable overrides.</p>
+                
+                <div class="test-grid">
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Settings from defaults
+                            <span class="integrity-type config">CONFIG</span>
+                        </div>
+
+                        <div class="test-detail">Default settings initialization</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Settings from environment
+                            <span class="integrity-type config">CONFIG</span>
+                        </div>
+
+                        <div class="test-detail">Environment variable override</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Settings from YAML file
+                            <span class="integrity-type config">CONFIG</span>
+                        </div>
+
+                        <div class="test-detail">YAML configuration parsing</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Settings to YAML
+                            <span class="integrity-type config">CONFIG</span>
+                        </div>
+
+                        <div class="test-detail">Export settings to YAML</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Singleton settings instance
+                            <span class="integrity-type config">CONFIG</span>
+                        </div>
+
+                        <div class="test-detail">Global settings management</div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="integrity-section">
+            <div class="integrity-category crypto">
+                <h3>
+                    <span class="icon">🔐</span>
+                    🔐 Cryptographic Services
+                    <span style="color: var(--success); font-size: 0.7em; margin-left: auto;">
+                        (7/7 passed)
+                    </span>
+                </h3>
+                
+                <p>Core cryptographic operations including SHA-256/BLAKE2 hashing, ECDSA signing/verification, and X.509 certificate management.</p>
+                
+                <div class="test-grid">
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            SHA-256 hashing
+                            <span class="integrity-type crypto">CRYPTO</span>
+                        </div>
+
+                        <div class="test-detail">Hash computation with SHA-256</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            BLAKE2 hashing
+                            <span class="integrity-type crypto">CRYPTO</span>
+                        </div>
+
+                        <div class="test-detail">Hash computation with BLAKE2</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            ECDSA signing
+                            <span class="integrity-type crypto">CRYPTO</span>
+                        </div>
+
+                        <div class="test-detail">Sign data with ECDSA P-256</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            ECDSA verification
+                            <span class="integrity-type crypto">CRYPTO</span>
+                        </div>
+
+                        <div class="test-detail">Verify ECDSA signature</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Certificate parsing
+                            <span class="integrity-type crypto">CRYPTO</span>
+                        </div>
+
+                        <div class="test-detail">X.509 certificate management</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Certificate caching
+                            <span class="integrity-type crypto">CRYPTO</span>
+                        </div>
+
+                        <div class="test-detail">LRU cache with TTL</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            HMAC fallback signing
+                            <span class="integrity-type crypto">CRYPTO</span>
+                        </div>
+
+                        <div class="test-detail">HMAC when private key unavailable</div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="integrity-section">
+            <div class="integrity-category code">
+                <h3>
+                    <span class="icon">🔐</span>
+                    🔐 Code Integrity Validation
+                    <span style="color: var(--success); font-size: 0.7em; margin-left: auto;">
+                        (5/5 passed)
+                    </span>
+                </h3>
+                
+                <p>SHA-256 hash verification of source code to detect tampering. Each code version has a unique fingerprint registered in Fabric.</p>
+                
+                <div class="test-grid">
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Hash computation for files
+                            <span class="integrity-type code">CODE</span>
+                        </div>
+
+                        <div class="test-detail">SHA-256 file hashing</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Register code hash
+                            <span class="integrity-type code">CODE</span>
+                        </div>
+
+                        <div class="test-detail">Register hash in storage</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Verify code integrity
+                            <span class="integrity-type code">CODE</span>
+                        </div>
+
+                        <div class="test-detail">Compare against registered</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Multiple paths verification
+                            <span class="integrity-type code">CODE</span>
+                        </div>
+
+                        <div class="test-detail">Batch file verification</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Code modified detection
+                            <span class="integrity-type code">CODE</span>
+                        </div>
+
+                        <div class="test-detail">CodeIntegrityError raised</div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="integrity-section">
+            <div class="integrity-category signature">
+                <h3>
+                    <span class="icon">🔑</span>
+                    🔑 Digital Signature Validation
+                    <span style="color: var(--success); font-size: 0.7em; margin-left: auto;">
+                        (4/4 passed)
+                    </span>
+                </h3>
+                
+                <p>ECDSA cryptographic signatures for message authentication. Each participant signs with their private key.</p>
+                
+                <div class="test-grid">
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Sign data
+                            <span class="integrity-type signature">SIGNATURE</span>
+                        </div>
+
+                        <div class="test-detail">Generate ECDSA signature</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Verify signature
+                            <span class="integrity-type signature">SIGNATURE</span>
+                        </div>
+
+                        <div class="test-detail">Verify with public key</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Invalid signature rejection
+                            <span class="integrity-type signature">SIGNATURE</span>
+                        </div>
+
+                        <div class="test-detail">SignatureError for invalid</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Signature with different key
+                            <span class="integrity-type signature">SIGNATURE</span>
+                        </div>
+
+                        <div class="test-detail">Tampering detection</div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="integrity-section">
+            <div class="integrity-category permission">
+                <h3>
+                    <span class="icon">🛡️</span>
+                    🛡️ Communication Permission Validation
+                    <span style="color: var(--success); font-size: 0.7em; margin-left: auto;">
+                        (6/6 passed)
+                    </span>
+                </h3>
+                
+                <p>Zero Trust access control defining who can communicate with whom. Explicit permission verification.</p>
+                
+                <div class="test-grid">
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Register permission
+                            <span class="integrity-type permission">PERMISSION</span>
+                        </div>
+
+                        <div class="test-detail">Add communication permission</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Check permission granted
+                            <span class="integrity-type permission">PERMISSION</span>
+                        </div>
+
+                        <div class="test-detail">Allowed returns True</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Check permission denied
+                            <span class="integrity-type permission">PERMISSION</span>
+                        </div>
+
+                        <div class="test-detail">Denied returns False</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Bidirectional permissions
+                            <span class="integrity-type permission">PERMISSION</span>
+                        </div>
+
+                        <div class="test-detail">Both directions allowed</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Update participant
+                            <span class="integrity-type permission">PERMISSION</span>
+                        </div>
+
+                        <div class="test-detail">Modify permissions</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Revoke participant
+                            <span class="integrity-type permission">PERMISSION</span>
+                        </div>
+
+                        <div class="test-detail">Immediate revocation</div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="integrity-section">
+            <div class="integrity-category message">
+                <h3>
+                    <span class="icon">📝</span>
+                    📝 Message Integrity Validation
+                    <span style="color: var(--success); font-size: 0.7em; margin-left: auto;">
+                        (7/7 passed)
+                    </span>
+                </h3>
+                
+                <p>Verifies that message content has not been altered during transmission. SHA-256 hash verification.</p>
+                
+                <div class="test-grid">
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Create text message
+                            <span class="integrity-type message">MESSAGE</span>
+                        </div>
+
+                        <div class="test-detail">Message with sender/recipient/hash/sig</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Create JSON message
+                            <span class="integrity-type message">MESSAGE</span>
+                        </div>
+
+                        <div class="test-detail">JSON data serialization</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Create binary message
+                            <span class="integrity-type message">MESSAGE</span>
+                        </div>
+
+                        <div class="test-detail">Binary data handling</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Verify message
+                            <span class="integrity-type message">MESSAGE</span>
+                        </div>
+
+                        <div class="test-detail">Hash + signature check</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Expired message handling
+                            <span class="integrity-type message">MESSAGE</span>
+                        </div>
+
+                        <div class="test-detail">TTL expiration</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Get messages by recipient
+                            <span class="integrity-type message">MESSAGE</span>
+                        </div>
+
+                        <div class="test-detail">Query messages</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Cleanup expired messages
+                            <span class="integrity-type message">MESSAGE</span>
+                        </div>
+
+                        <div class="test-detail">Automatic cleanup</div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="integrity-section">
+            <div class="integrity-category rate">
+                <h3>
+                    <span class="icon">⚡</span>
+                    ⚡ Rate Limiting Validation
+                    <span style="color: var(--success); font-size: 0.7em; margin-left: auto;">
+                        (5/5 passed)
+                    </span>
+                </h3>
+                
+                <p>Token bucket algorithm provides DoS protection by limiting requests per second.</p>
+                
+                <div class="test-grid">
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Rate limiter initialization
+                            <span class="integrity-type rate">RATE</span>
+                        </div>
+
+                        <div class="test-detail">Configure RPS and burst</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Token acquisition
+                            <span class="integrity-type rate">RATE</span>
+                        </div>
+
+                        <div class="test-detail">Acquire token</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Try acquire non-blocking
+                            <span class="integrity-type rate">RATE</span>
+                        </div>
+
+                        <div class="test-detail">Non-blocking attempt</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Rate limit statistics
+                            <span class="integrity-type rate">RATE</span>
+                        </div>
+
+                        <div class="test-detail">Get current stats</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Burst handling
+                            <span class="integrity-type rate">RATE</span>
+                        </div>
+
+                        <div class="test-detail">Short spike allowance</div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="integrity-section">
+            <div class="integrity-category retry">
+                <h3>
+                    <span class="icon">🔄</span>
+                    🔄 Retry Logic Validation
+                    <span style="color: var(--success); font-size: 0.7em; margin-left: auto;">
+                        (6/6 passed)
+                    </span>
+                </h3>
+                
+                <p>Exponential backoff ensures reliable communication with transient failures.</p>
+                
+                <div class="test-grid">
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Retry decorator
+                            <span class="integrity-type retry">RETRY</span>
+                        </div>
+
+                        <div class="test-detail">@with_retry decorator</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Retry on success
+                            <span class="integrity-type retry">RETRY</span>
+                        </div>
+
+                        <div class="test-detail">Immediate success</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Retry with backoff
+                            <span class="integrity-type retry">RETRY</span>
+                        </div>
+
+                        <div class="test-detail">Exponential delay</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Retry exhausted
+                            <span class="integrity-type retry">RETRY</span>
+                        </div>
+
+                        <div class="test-detail">Max attempts reached</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            RetryContext manager
+                            <span class="integrity-type retry">RETRY</span>
+                        </div>
+
+                        <div class="test-detail">Context manager usage</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Callback on retry
+                            <span class="integrity-type retry">RETRY</span>
+                        </div>
+
+                        <div class="test-detail">on_retry callback</div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="integrity-section">
+            <div class="integrity-category storage">
+                <h3>
+                    <span class="icon">💾</span>
+                    💾 Storage Validation
+                    <span style="color: var(--success); font-size: 0.7em; margin-left: auto;">
+                        (7/7 passed)
+                    </span>
+                </h3>
+                
+                <p>LocalStorage provides fallback when Fabric is unavailable. Message TTL and automatic cleanup.</p>
+                
+                <div class="test-grid">
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            LocalStorage init
+                            <span class="integrity-type storage">STORAGE</span>
+                        </div>
+
+                        <div class="test-detail">Create storage directory</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Save/get data
+                            <span class="integrity-type storage">STORAGE</span>
+                        </div>
+
+                        <div class="test-detail">JSON serialization</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            List keys
+                            <span class="integrity-type storage">STORAGE</span>
+                        </div>
+
+                        <div class="test-detail">Query stored keys</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Participant registration
+                            <span class="integrity-type storage">STORAGE</span>
+                        </div>
+
+                        <div class="test-detail">Fabric storage</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Certificate retrieval
+                            <span class="integrity-type storage">STORAGE</span>
+                        </div>
+
+                        <div class="test-detail">Get from Fabric</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Task registration
+                            <span class="integrity-type storage">STORAGE</span>
+                        </div>
+
+                        <div class="test-detail">Register task hash</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Revoked participants
+                            <span class="integrity-type storage">STORAGE</span>
+                        </div>
+
+                        <div class="test-detail">Check revocation</div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="integrity-section">
+            <div class="integrity-category fabric">
+                <h3>
+                    <span class="icon">⛓️</span>
+                    ⛓️ Fabric Integration
+                    <span style="color: var(--success); font-size: 0.7em; margin-left: auto;">
+                        (6/6 passed)
+                    </span>
+                </h3>
+                
+                <p>Hyperledger Fabric blockchain integration for immutable audit trails.</p>
+                
+                <div class="test-grid">
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            FabricGateway init
+                            <span class="integrity-type fabric">FABRIC</span>
+                        </div>
+
+                        <div class="test-detail">Initialize gateway</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Query chaincode
+                            <span class="integrity-type fabric">FABRIC</span>
+                        </div>
+
+                        <div class="test-detail">Read from Fabric</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Invoke chaincode
+                            <span class="integrity-type fabric">FABRIC</span>
+                        </div>
+
+                        <div class="test-detail">Write to Fabric</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Get certificate PEM
+                            <span class="integrity-type fabric">FABRIC</span>
+                        </div>
+
+                        <div class="test-detail">X.509 certificate</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Register identity
+                            <span class="integrity-type fabric">FABRIC</span>
+                        </div>
+
+                        <div class="test-detail">Register in Fabric</div>
+
+                    </div>
+
+                    <div class="test-item passed">
+                        <div class="test-name">
+                            <span class="test-status passed">
+                                ✅
+                            </span>
+                            Network configuration
+                            <span class="integrity-type fabric">FABRIC</span>
+                        </div>
+
+                        <div class="test-detail">Channel/chaincode setup</div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>wFabricSecurity - Zero Trust Security System</strong></p>
+            <p>📅 2026-03-21 07:51:54 | 🐍 Python 3.13.5</p>
+            <p>🔗 <a href="https://github.com/wisrovi/wFabricSecurity">github.com/wisrovi/wFabricSecurity</a></p>
+            <p style="margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 15px;">
+                <strong>Integrity Validations Implemented:</strong><br>
+                ✅ Code Integrity | ✅ Digital Signatures | ✅ Communication Permissions<br>
+                ✅ Message Integrity | ✅ Rate Limiting | ✅ Retry Logic | ✅ Storage Validation
+            </p>
+        </div>
+    </div>
+</body>
+</html>
