@@ -1,300 +1,123 @@
-# Ejemplos de wFabricSecurity
+# Examples
 
-Este directorio contiene ejemplos funcionales que demuestran cómo usar la librería **wFabricSecurity** para seguridad distribuida con Hyperledger Fabric.
+**Functional examples demonstrating wFabricSecurity usage**
 
-## Estructura de Ejemplos
+## Overview
+
+This directory contains complete working examples demonstrating how to use wFabricSecurity in different scenarios: JSON data processing, image handling, and P2P sensitive data.
+
+## Directory Structure
 
 ```
 examples/
-├── json/           # Ejemplos con datos JSON
-│   ├── base/      # Síncrono
-│   └── async/     # Asíncrono
-├── image/          # Ejemplos con imágenes
-│   ├── base/
-│   └── async/
-├── p2p/            # Ejemplos con datos sensibles (P2P)
-│   ├── base/
-│   └── async/
-├── data/           # Ejemplos con archivos binarios
-│   ├── base/
-│   └── async/
-├── test/           # Tests automatizados
-│   ├── conftest.py
-│   ├── test_library.py   # Tests de la librería core (228 tests)
-│   ├── test_zero_trust.py # Tests Zero Trust
-│   ├── test_core.py     # Tests de funcionalidades core
-│   ├── test_security.py  # Tests de seguridad
-│   ├── test_report.py   # Generador de reportes HTML
-│   └── reports/        # Reportes HTML generados
-├── requirements.txt
-└── Makefile
+├── base/                  # Synchronous examples
+│   ├── master.py         # Master node implementation
+│   └── slave.py          # Slave node implementation
+├── async/                # Asynchronous examples
+│   ├── master.py         # Async master implementation
+│   └── slave.py          # Async slave implementation
+├── json/                 # JSON data examples
+├── image/                # Image processing examples
+├── p2p/                  # P2P/sensitive data examples
+├── data/                  # Binary file examples
+└── test/                 # Example tests
+    ├── test_json.py      # JSON tests
+    ├── test_image.py     # Image tests
+    ├── test_p2p.py       # P2P tests
+    ├── test_core.py      # Core tests
+    ├── test_security.py  # Security tests
+    ├── test_zero_trust.py # Zero Trust flow tests
+    └── reports/          # Generated test reports
 ```
 
-## Tipos de Ejemplos
+## Example Types
 
-### 1. JSON (json/)
-Envía y recibe datos JSON estructurados auditados en Fabric.
-
-**Casos de uso:**
-- APIs REST con auditoría
-- Intercambio de datos estructurados
-- Microservicios con registro inmutable
-
-**Puerto:** 8001
-
-**Ejecución:**
+### JSON Processing
 ```bash
-# Terminal 1 - Slave
-cd examples/json/base
-python slave.py
-
-# Terminal 2 - Master
 cd examples/json/base
 python master.py
+# In another terminal:
+python slave.py
 ```
 
-### 2. Image (image/)
-Procesa imágenes con auditoría completa en Fabric.
-
-**Casos de uso:**
-- Procesamiento de imágenes médico
-- Verificación de documentos
-- Análisis de imágenes con auditoría
-
-**Puerto:** 8002
-
-**Ejecución:**
+### Image Processing
 ```bash
-# Terminal 1 - Slave
 cd examples/image/base
+python master.py --image /path/to/image.jpg
 python slave.py
-
-# Terminal 2 - Master
-python master.py
 ```
 
-### 3. P2P (p2p/)
-Manejo de datos sensibles (tarjetas, contraseñas) con auditoría.
-
-**Casos de uso:**
-- Procesamiento de pagos
-- Manejo de credenciales
-- Datos personales sensibles
-
-**Puerto:** 8003
-
-**Ejecución:**
+### P2P Sensitive Data
 ```bash
-# Terminal 1 - Slave
 cd examples/p2p/base
+python master.py --p2p '{"card": "1234-5678-9012"}'
 python slave.py
-
-# Terminal 2 - Master
-python master.py
 ```
 
-### 4. Data (data/)
-Envío y procesamiento de archivos binarios con auditoría.
+## Running Examples
 
-**Casos de uso:**
-- Reportes PDF firmados
-- Documentos legales
-- Archivos de configuración
-
-**Puerto:** 8004
-
-**Ejecución:**
 ```bash
-# Terminal 1 - Slave
-cd examples/data/base
-python slave.py
-
-# Terminal 2 - Master
-python master.py
-```
-
-## Variantes (base vs async)
-
-### Base (síncrono)
-- Usa `requests` para HTTP
-- Más simple de entender
-- Adecuado para scripts y CLI
-
-### Async (asíncrono)
-- Usa `httpx` con async/await
-- Mejor rendimiento con múltiples requests
-- Adecuado para servidores y alta concurrencia
-
-## Arquitectura de cada Ejemplo
-
-```
-┌─────────────┐                    ┌─────────────┐
-│   MASTER    │ ──── HTTP POST ───► │   SLAVE     │
-│             │                     │  (FastAPI)  │
-│ - Genera    │                     │ - Verifica  │
-│   hash_a    │                     │ - Procesa   │
-│ - Firma     │                     │ - Genera    │
-│ - Envía     │ ◄─── Response ─────│   hash_b    │
-│             │                     │ - Firma     │
-└─────────────┘                     └─────────────┘
-       │                                    │
-       │         ┌─────────────┐            │
-       └────────►│  Fabric     │◄───────────┘
-                 │  Gateway    │
-                 │             │
-                 │ - Register  │
-                 │   Task      │
-                 │ - Complete  │
-                 │   Task      │
-                 └─────────────┘
-```
-
-## Flujo de una Transacción
-
-1. **Master** genera `hash_a` del payload
-2. **Master** firma `hash_a` con su clave privada (ECDSA)
-3. **Master** envía datos + firma al Slave via HTTP
-4. **Slave** verifica firma del Master
-5. **Slave** procesa y genera `hash_b` del resultado
-6. **Slave** firma `hash_b` con su clave privada
-7. **Slave** registra en Fabric (`CompleteTask`)
-8. **Slave** responde al Master
-9. **Master** verifica firma del Slave
-10. **Master** registra en Fabric (`RegisterTask`)
-
-## Tests
-
-Los tests verifican que todas las funcionalidades funcionan correctamente.
-
-### Ejecutar todos los tests (core):
-```bash
+# From examples directory
 cd examples
-make test
-```
 
-### Tests específicos:
-```bash
-make test-core     # Tests de la librería (228 tests)
-make test-json    # Tests de JSON
-make test-image   # Tests de Image
-make test-p2p     # Tests de P2P
-make test-data    # Tests de Data
-```
-
-### Tests completos (incluyendo integration):
-```bash
+# Run all example tests
 make test-all
+
+# Run specific example tests
+python -m pytest test/test_json.py -v
+
+# View example test reports
+open test/reports/
 ```
 
-## Reportes de Tests
+## Master-Slave Communication Flow
 
-Genera reportes profesionales en HTML con fecha, estadísticas y detalle de resultados.
+```
+┌─────────────────┐                      ┌─────────────────┐
+│      MASTER     │                      │      SLAVE      │
+│                 │                      │                 │
+│ 1. Load config │                      │ 1. Load config  │
+│ 2. Register ID  │                      │ 2. Register ID  │
+│ 3. Set up comms │ ──────────────────────│ 3. Verify comms  │
+│ 4. Create task  │   POST {payload,     │ 4. Verify sig   │
+│ 5. Sign hash_a  │       hash_a, sig}   │ 5. Check perm   │
+│ 6. Send request │◄─────────────────────│ 6. Process task │
+│ 7. Wait result  │   Response {result,  │ 7. Sign hash_b  │
+│ 8. Verify sig   │       hash_b, sig}   │ 8. Send result  │
+│ 9. Store hash_a │ ──────────────────────│ 9. Store hash_b │
+└─────────────────┘                      └─────────────────┘
+```
 
-### Generar reporte HTML:
+## Key Features Demonstrated
+
+| Example | Features Shown |
+|---------|---------------|
+| JSON | Message creation, JSON serialization, signature verification |
+| Image | Binary data handling, base64 encoding, large payload processing |
+| P2P | Sensitive data masking, restricted permissions, encrypted storage |
+
+## Testing Examples
+
 ```bash
+# Run example-specific tests
+cd examples
+make test-json
+make test-image
+make test-p2p
+
+# Generate test report
 make report
-# o
-python test/test_report.py --format html
 ```
 
-### Ver último reporte:
-```bash
-make view-report
-```
+## Configuration
 
-### Ubicación de reportes:
-```
-examples/test/reports/
-└── test_report_YYYYMMDD_HHMMSS.html
-```
-
-El reporte incluye:
-- 📅 Fecha y hora de ejecución
-- 📊 Resumen con estadísticas (pasados, fallidos, omitidos)
-- 📈 Gráfico de distribución de resultados
-- 📋 Detalle de cada test con errores si existen
-- 🎨 Diseño profesional responsive con modo oscuro
-
-## Configuración
-
-### Variables de entorno:
-
-```bash
-# Puerto del peer de Fabric
-export FABRIC_PEER_URL=localhost:7051
-
-# Path al MSP (Membership Service Provider)
-export FABRIC_MSP_PATH=/path/to/msp
-
-# URL del slave (para el master)
-export SLAVE_URL=http://127.0.0.1:8001/process
-```
-
-### Identidades
-
-Cada ejemplo usa su propia identidad configurada en el MSP:
-
-- **Master**: Identidad del Master (clave privada + certificado)
-- **Slave**: Identidad del Slave (clave privada + certificado)
-
-Las identidades se cargan automáticamente desde el directorio del MSP.
-
-## Code Signing
-
-Cada ejemplo soporta **verificación de integridad de código**:
+Examples use default settings but can be customized:
 
 ```python
-# Registrar el código al iniciar
-security.register_code(["master.py"], "1.0.0")
-
-# Verificar antes de operaciones sensibles
-security.verify_code(["master.py"])
+security = FabricSecurity(
+    me="Master",
+    msp_path="/path/to/msp",
+    fabric_channel="mychannel",
+    fabric_chaincode="tasks"
+)
 ```
-
-Si el código es modificado después del registro, la verificación fallará con `CodeIntegrityError`.
-
-## Dependencias
-
-```
-fastapi        # API del slave
-uvicorn        # Servidor ASGI
-requests       # HTTP síncrono
-httpx          # HTTP asíncrono
-pillow         # Procesamiento de imágenes
-pytest         # Testing
-pytest-html    # Reportes HTML
-```
-
-Instalar con:
-```bash
-make install
-```
-
-## Verificación de Estado de Fabric
-
-```bash
-make test-fabric
-```
-
-Esto verifica que los contenedores de Docker de Fabric estén corriendo.
-
-## Troubleshooting
-
-### "Connection refused"
-- Verifica que el slave esté corriendo en el puerto correcto
-- Verifica que no haya otro proceso usando ese puerto
-
-### "Chaincode no funcional"
-- Los ejemplos funcionan con almacenamiento local si el chaincode no está disponible
-- Para usar chaincode real: `cd ../enviroment && make network`
-
-### Tests fallan
-- Asegúrate de tener las dependencias instaladas: `make install`
-- Verifica que el MSP path sea correcto
-
-## Créditos
-
-- **Master**: Genera y firma la transacción inicial
-- **Slave**: Procesa y firma la respuesta
-- **Fabric Gateway**: Maneja la comunicación con Hyperledger Fabric
-- **ECDSA**: Algoritmo de firma criptográfica

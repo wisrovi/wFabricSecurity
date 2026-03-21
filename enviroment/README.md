@@ -1,120 +1,129 @@
-# Entorno Hyperledger Fabric
+# Environment
 
-Este directorio contiene la configuración para una red Hyperledger Fabric de desarrollo.
+**Hyperledger Fabric network setup and configuration**
 
-## Estado Actual
+## Overview
 
-**Funcional:**
-- ✅ Orderer funcionando (solo)
-- ✅ Red Docker configurada
-- ✅ Canal "mychannel" creado
-- ✅ Peer0.org1.net unido al canal
-- ✅ Chaincode "tasks" instalado
+This directory contains the Docker-based Hyperledger Fabric network configuration, chaincode (smart contracts), and organization MSP certificates.
 
-**En desarrollo:**
-- ⚙️ Chaincode instantiated (requiere configuración adicional)
-- ⚙️ Actualización de anchor peer
-
-## Estructura
+## Directory Structure
 
 ```
 enviroment/
-├── setup.sh              # Script principal de configuración
-├── Makefile              # Comandos便捷
-├── docker-compose.yaml   # Definición de servicios
-├── configtx.yaml        # Configuración de canales
-├── crypto-config.yaml   # Configuración de organizaciones
-├── chaincode/           # Chaincode Go
+├── docker-compose.yaml      # Docker services configuration
+├── chaincode/              # Go chaincode source
 │   └── tasks/
-│       ├── tasks.go    # Código del chaincode
-│       └── go.mod      # Módulos Go
-├── organizations/       # Certificados (generados)
-│   ├── ordererOrganizations/
+│       ├── main.go         # Chaincode entry point
+│       └── tasks.go        # Task management functions
+├── organizations/          # MSP certificates (auto-generated)
 │   └── peerOrganizations/
-├── channel-artifacts/   # Artefactos (generados)
-└── bin/                # Binarios Fabric (descargados)
+│       └── org1.net/
+│           ├── users/      # User identities
+│           ├── peers/      # Peer configurations
+│           └── msp/       # Organizational MSP
+├── configtx.yaml          # Channel configuration
+└── crypto-config.yaml      # Cryptographic config
 ```
 
-## Comandos Rápidos
+## Quick Setup
 
 ```bash
-# Configuración inicial completa
-make setup && make up && make network
+cd enviroment
 
-# Solo levantar/redesplegar
+# Generate certificates and artifacts
+make setup
+
+# Start Fabric network
+make up
+
+# Stop Fabric network
+make down
+
+# View logs
+make logs
+
+# Clean everything
+make clean
+```
+
+## Docker Services
+
+| Service | Description |
+|---------|-------------|
+| `orderer.example.com` | Fabric ordering service |
+| `peer0.org1.example.com` | Fabric peer node |
+| `ca.org1.example.com` | Certificate Authority |
+| `cli` | Command-line interface container |
+
+## Chaincode Functions
+
+The `tasks` chaincode provides these functions:
+
+| Function | Description |
+|----------|-------------|
+| `RegisterParticipant` | Register identity in ledger |
+| `GetParticipant` | Query participant data |
+| `RegisterTask` | Store task hash_a |
+| `CompleteTask` | Store task hash_b |
+| `GetTask` | Query task data |
+| `GetCodeHash` | Retrieve registered code hash |
+
+## Network Ports
+
+| Port | Service |
+|------|---------|
+| 7050 | Peer gRPC |
+| 7051 | Peer event hub |
+| 7053 | CA HTTP |
+| 7054 | CouchDB |
+| 7050 | Orderer gRPC |
+
+## Environment Variables
+
+```bash
+export FABRIC_PEER_URL=localhost:7051
+export FABRIC_ORDERER_URL=localhost:7050
+export FABRIC_CHANNEL=mychannel
+export FABRIC_CHAINCODE=tasks
+export FABRIC_MSP_PATH=./organizations/peerOrganizations/org1.net/users/Admin@org1.net/msp
+```
+
+## Connecting to Fabric
+
+From the library:
+```python
+from wFabricSecurity import FabricSecurity
+
+security = FabricSecurity(
+    me="Admin",
+    msp_path="./enviroment/organizations/peerOrganizations/org1.net/users/Admin@org1.net/msp",
+    fabric_channel="mychannel",
+    fabric_chaincode="tasks"
+)
+```
+
+## Troubleshooting
+
+```bash
+# Check container status
+docker ps
+
+# View peer logs
+docker logs peer0.org1.example.com
+
+# View orderer logs
+docker logs orderer.example.com
+
+# Restart network
 make down && make up
 
-# Instalar chaincode
-make install-chaincode
-
-# Ver estado de la red
-docker ps
-docker logs orderer.net
-docker logs peer0.org1.net
+# Recreate certificates
+make clean && make setup
 ```
 
-## Solución de Problemas
+## Security Notes
 
-### El orderer no inicia
-
-```bash
-# Verificar logs
-docker logs orderer.net
-
-# Causa común: genesis block inválido
-make clean && make setup && make up
-```
-
-### El peer no puede unirse al canal
-
-```bash
-# Verificar que el orderer está funcionando
-docker logs orderer.net | grep "Beginning to serve"
-
-# Verificar que el canal existe
-docker exec cli peer channel list
-```
-
-### Chaincode no se ejecuta
-
-```bash
-# Reinstalar chaincode
-make install-chaincode
-
-# Verificar que está instalado
-docker exec cli peer lifecycle chaincode queryinstalled
-```
-
-## Configuración de Red
-
-### Hosts (agregar a /etc/hosts si es necesario)
-
-```
-127.0.0.1    orderer.net
-127.0.0.1    peer0.org1.net
-```
-
-### Puertos Expuestos
-
-| Servicio | Puerto | Descripción |
-|----------|--------|-------------|
-| orderer.net | 7050 | Orderer (solo) |
-| peer0.org1.net | 7051 | Peer gRPC |
-| peer0.org1.net | 7052 | Chaincode |
-| peer0.org1.net | 7053 | Event hub |
-| couchdb0 | 5984 | CouchDB |
-
-## Configuración TLS
-
-**Estado actual:** TLS deshabilitado para simplificar la configuración.
-
-Para habilitar TLS en producción, modificar:
-1. `docker-compose.yaml` - Habilitar variables `CORE_TLS_ENABLED` y `ORDERER_GENERAL_TLS_ENABLED`
-2. Regenerar certificados con `make clean && make setup`
-
-## Próximos Pasos
-
-1. Resolver problemas de políticas de canal
-2. Completar instalación del chaincode
-3. Agregar más organizaciones
-4. Configurar RAFT consensus para producción
+- MSP certificates are auto-generated by `cryptogen`
+- Store sensitive materials securely
+- Never commit `organizations/` to version control
+- Use TLS for production deployments
