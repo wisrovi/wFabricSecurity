@@ -1,0 +1,91 @@
+/* Custom CSS for wFabricSecurity Documentation */
+
+:root {
+    --pst-color-primary: 102, 126, 234;
+    --pst-color-success: 17, 153, 142;
+    --pst-color-danger: 235, 67, 73;
+    --pst-color-warning: 243, 156, 18;
+}
+
+/* Code blocks */
+.highlight {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1em;
+}
+
+/* Admonitions */
+.admonition {
+    border-radius: 8px;
+    padding: 1em;
+}
+
+.admonition.note {
+    background-color: rgba(102, 126, 234, 0.1);
+    border-left: 4px solid rgb(102, 126, 234);
+}
+
+.admonition.warning {
+    background-color: rgba(243, 156, 18, 0.1);
+    border-left: 4px solid rgb(243, 156, 18);
+}
+
+.admonition.important {
+    background-color: rgba(17, 153, 142, 0.1);
+    border-left: 4px solid rgb(17, 153, 142);
+}
+
+/* Tables */
+table.docutils {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+table.docutils thead th {
+    background-color: rgb(102, 126, 234);
+    color: white;
+}
+
+/* Badges */
+.badge {
+    padding: 0.25em 0.5em;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
+.badge-success {
+    background-color: #11998e;
+    color: white;
+}
+
+.badge-primary {
+    background-color: #667eea;
+    color: white;
+}
+
+.badge-danger {
+    background-color: #eb3349;
+    color: white;
+}
+
+/* Custom classes */
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5em;
+    margin: 1.5em 0;
+}
+
+.feature-card {
+    padding: 1.5em;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid rgb(102, 126, 234);
+}
+
+.feature-card h3 {
+    margin-top: 0;
+    color: rgb(102, 126, 234);
+}
