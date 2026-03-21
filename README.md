@@ -25,9 +25,122 @@ In a Zero Trust architecture:
 
 ---
 
-## 🚶 Diagram Walkthrough - Main Process Flow
+## 🚶 Main Process Flow
 
+```mermaid
+flowchart LR
+    subgraph Master
+        A1[User Request] --> A2[Generate hash_a]
+        A2 --> A3[Sign ECDSA]
+        A3 --> A4[Send to SLAVE]
+    end
+
+    subgraph Fabric
+        F1[FabricGateway] --> F2[Ledger Storage]
+    end
+
+    subgraph Slave
+        B1[Receive] --> B2[Verify Signature]
+        B2 --> B3[Check Permissions]
+        B3 --> B4[Process Task]
+        B4 --> B5[Generate hash_b]
+        B5 --> B6[Sign hash_b]
+    end
+
+    A4 --> B1
+    B6 --> F1
+    A3 --> F1
 ```
+
+---
+
+## 🗺️ System Workflow
+
+```mermaid
+sequenceDiagram
+    participant M as Master
+    participant S as Slave
+    participant F as Fabric
+
+    M->>M: 1. Compute hash_a
+    M->>M: 2. Sign hash_a
+    M->>S: 3. POST request
+    S->>S: 4. Verify signature
+    S->>F: 5. Query code_hash
+    F-->>S: 6. Return data
+    alt Code Modified
+        S->>M: Error!
+    else OK
+        S->>S: 7. Process task
+        S->>S: 8. Compute hash_b
+        S->>F: 9. CompleteTask
+        S-->>M: 10. Response
+    end
+```
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+flowchart TB
+    subgraph Presentation
+        CLI[CLI]
+        API[API]
+    end
+    subgraph Application
+        FS[FabricSecurity]
+        FSS[Simple]
+    end
+    subgraph Security
+        IV[Integrity]
+        PM[Permissions]
+        MM[Messages]
+        RL[RateLimit]
+    end
+    subgraph Crypto
+        HS[Hashing]
+        SS[Signing]
+    end
+    subgraph Fabric
+        FG[Gateway]
+        FN[Network]
+    end
+    subgraph Storage
+        FS_L[Local]
+        FS_F[Fabric]
+    end
+
+    CLI & API --> FS
+    FS --> FSS
+    FSS --> IV & PM & MM
+    FS --> IV & PM & MM & RL
+    IV --> HS & SS
+    PM & MM --> FG
+    FG --> FN --> FS_F & FS_L
+```
+
+---
+
+## ⚙️ Lifecycle
+
+```mermaid
+flowchart TD
+    A[Start] --> B[Load Config]
+    B --> C{YAML?}
+    C -->|Yes| D[YAML]
+    C -->|No| E[Env Vars]
+    D --> F[Merge Defaults]
+    E --> F
+    F --> G[Init Gateway]
+    G --> H{Fabric OK?}
+    H -->|Yes| I[Use FabricStorage]
+    H -->|No| J[Use LocalStorage]
+    I --> K[Ready]
+    J --> K
+```
+
+---
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         MASTER Node (Source)                                 │
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────┐ │
@@ -533,49 +646,238 @@ flowchart TB
 
 ## 🔐 Integrity Validation Matrix
 
-The library implements **10 core integrity validation categories** ensuring complete Zero Trust security:
+The library implements **10 core integrity validation categories** ensuring complete Zero Trust security. Each validation type ensures specific security properties are maintained.
 
-| Category | Icon | Description | Coverage |
-|----------|------|-------------|----------|
-| **Configuration** | ⚙️ | Settings management (YAML + env vars) with validation | 94-100% |
-| **Cryptographic Services** | 🔐 | SHA-256, BLAKE2 hashing, ECDSA signing, X.509 certificates | 75-91% |
-| **Code Integrity** | 🔐 | SHA-256 hash verification of source code to detect tampering | 78% |
-| **Digital Signatures** | 🔑 | ECDSA cryptographic signatures for message authentication | 77% |
-| **Communication Permissions** | 🛡️ | Fine-grained access control (bidirectional, outbound, inbound) | 89% |
-| **Message Integrity** | 📝 | Hash verification to detect transmission alterations | 71% |
-| **Rate Limiting** | ⚡ | Token bucket algorithm for DoS protection | 88% |
-| **Retry Logic** | 🔄 | Exponential backoff with configurable attempts | 78% |
-| **Storage Validation** | 💾 | Local and Fabric storage integrity checks | 77-95% |
-| **Fabric Integration** | ⛓️ | Hyperledger Fabric gateway, network, and contract | 73-95% |
+### Validation Categories Overview
 
-### Security Features
+| # | Category | Module | Coverage | Tests |
+|---|----------|--------|----------|-------|
+| 1 | **Configuration** | `config/` | 94-100% | 12 |
+| 2 | **Cryptographic Services** | `crypto/` | 75-91% | 35 |
+| 3 | **Code Integrity** | `security/integrity.py` | 78% | 15 |
+| 4 | **Digital Signatures** | `crypto/signing.py` | 77% | 20 |
+| 5 | **Communication Permissions** | `security/permissions.py` | 89% | 25 |
+| 6 | **Message Integrity** | `security/messages.py` | 86% | 30 |
+| 7 | **Rate Limiting** | `security/rate_limiter.py` | 88% | 18 |
+| 8 | **Retry Logic** | `security/retry.py` | 78% | 20 |
+| 9 | **Storage Validation** | `storage/` | 77-95% | 40 |
+| 10 | **Fabric Integration** | `fabric/` | 73-95% | 43 |
+
+### Detailed Validation Matrix
+
+#### 1. Code Integrity (78% coverage)
+```
+Validates source code has not been tampered with
+┌────────────────────────────────────────────────────────────┐
+│  Code File ──► SHA-256 Hash ──► Store in Fabric          │
+│                      │                                    │
+│                      ▼                                    │
+│  Verification: Compare local hash vs registered hash      │
+│                      │                                    │
+│              ┌───────┴───────┐                            │
+│              │ Match?        │                            │
+│         NO───┴──────┐  ┌─────┴───YES                     │
+│              │       │  │                                │
+│              ▼       │  ▼                                │
+│    CodeIntegrity    │  Proceed                           │
+│    Error raised     │                                    │
+└────────────────────────────────────────────────────────────┘
+```
+
+| Test | Description | Status |
+|------|-------------|--------|
+| `test_hash_computation` | SHA-256 file hashing | ✅ |
+| `test_register_code_hash` | Store hash in storage | ✅ |
+| `test_verify_code_integrity` | Compare against registered | ✅ |
+| `test_multiple_paths_verification` | Batch file verification | ✅ |
+| `test_code_modified_detection` | CodeIntegrityError raised | ✅ |
+
+#### 2. Digital Signature Validation (77% coverage)
+```
+ECDSA P-256 cryptographic signatures
+┌────────────────────────────────────────────────────────────┐
+│  Data ──► Sign(ECDSA, Private Key) ──► Signature         │
+│                      │                                    │
+│                      ▼                                    │
+│  Verification: Verify(Signature, Public Certificate)       │
+│                      │                                    │
+│              ┌───────┴───────┐                            │
+│              │ Valid?        │                            │
+│         NO───┴──────┐  ┌─────┴───YES                     │
+│              │       │  │                                │
+│              ▼       │  ▼                                │
+│    SignatureError   │  Verified                          │
+│              │       │                                    │
+└────────────────────────────────────────────────────────────┘
+```
+
+| Test | Description | Status |
+|------|-------------|--------|
+| `test_sign_data` | Generate ECDSA signature | ✅ |
+| `test_verify_signature` | Verify with public key | ✅ |
+| `test_invalid_signature` | SignatureError for invalid | ✅ |
+| `test_hmac_fallback` | HMAC when no private key | ✅ |
+
+#### 3. Communication Permissions (89% coverage)
+```
+Zero Trust access control
+┌────────────────────────────────────────────────────────────┐
+│  MASTER ──► register_communication ──► SLAVE              │
+│                      │                                    │
+│                      ▼                                    │
+│  Request: Can MASTER send to SLAVE?                       │
+│                      │                                    │
+│              ┌───────┴───────┐                            │
+│              │ Allowed?      │                            │
+│         NO───┴──────┐  ┌─────┴───YES                     │
+│              │       │  │                                │
+│              ▼       │  ▼                                │
+│    PermissionDenied  │  Process Request                  │
+│    Error            │                                    │
+└────────────────────────────────────────────────────────────┘
+```
+
+| Direction | Description | Example |
+|-----------|-------------|---------|
+| OUTBOUND | A can send to B | Master → Slave |
+| INBOUND | B can receive from A | Slave ← Master |
+| BIDIRECTIONAL | Both directions | Master ↔ Slave |
+
+#### 4. Message Integrity (86% coverage)
+```
+Hash verification for transmission integrity
+┌────────────────────────────────────────────────────────────┐
+│  Message Content ──► SHA-256 Hash ──► Signature           │
+│                      │                                    │
+│                      ▼                                    │
+│  Verification: Recompute hash, compare signatures        │
+│                      │                                    │
+│              ┌───────┴───────┐                            │
+│              │ Intact?       │                            │
+│         NO───┴──────┐  ┌─────┴───YES                     │
+│              │       │  │                                │
+│              ▼       │  ▼                                │
+│    MessageIntegrity │  Message Valid                     │
+│    Error           │                                    │
+└────────────────────────────────────────────────────────────┘
+```
 
 | Feature | Description |
 |---------|-------------|
-| **Code Integrity** | SHA-256 hash verification of source code to detect tampering |
-| **ECDSA Signatures** | Elliptic curve cryptography for message signing and verification |
-| **Communication Permissions** | Fine-grained access control (bidirectional, outbound, inbound) |
-| **Message Integrity** | Hash verification to detect transmission alterations |
-| **Certificate Caching** | LRU cache with TTL for performance optimization |
-| **Participant Revocation** | Ability to revoke compromised participants |
+| TTL Support | Messages expire after configurable time |
+| JSON Messages | Automatic serialization |
+| Binary Messages | Base64 encoding support |
+| Cleanup | Automatic expired message removal |
 
-### Infrastructure Features
+#### 5. Rate Limiting (88% coverage)
+```
+Token bucket algorithm for DoS protection
+┌────────────────────────────────────────────────────────────┐
+│                    Token Bucket                           │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │  [Token] [Token] [Token] [Token] [Token] ...   │   │
+│  │                    │                              │   │
+│  │         ┌──────────┴──────────┐                  │   │
+│  │         │  Requests arrive    │                  │   │
+│  │         └──────────┬──────────┘                  │   │
+│  │                    │                             │   │
+│  │         ┌─────────┴─────────┐                   │   │
+│  │         │ Token available?  │                   │   │
+│  │    YES──┴──────┐  ┌─────────┴───NO              │   │
+│  │                │  │                             │   │
+│  │                ▼  ▼                             │   │
+│  │            Blocked                         Allowed│   │
+│  └──────────────────────────────────────────────────┘   │
+└────────────────────────────────────────────────────────────┘
+```
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `requests_per_second` | 100 | Token generation rate |
+| `burst` | 200 | Max tokens in bucket |
+
+#### 6. Retry Logic (78% coverage)
+```
+Exponential backoff for transient failures
+┌────────────────────────────────────────────────────────────┐
+│  Attempt 1 ──► FAIL ──► Wait 0.5s ──► Attempt 2         │
+│                                    │                       │
+│                                    ▼                       │
+│                           FAIL ──► Wait 0.75s ──► Attempt 3│
+│                                              │            │
+│                                              ▼            │
+│                                     FAIL ──► Raise Error   │
+└────────────────────────────────────────────────────────────┘
+```
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `max_attempts` | 3 | Maximum retry attempts |
+| `backoff_factor` | 1.5 | Multiplier for delay |
+| `initial_delay` | 0.5 | Starting delay in seconds |
+
+#### 7. Storage Validation (77-95% coverage)
+
+| Storage | Coverage | Use Case |
+|---------|----------|----------|
+| FabricStorage | 77% | Production (blockchain) |
+| LocalStorage | 95% | Development/testing |
+
+#### 8. Fabric Integration (73-95% coverage)
+
+| Component | Coverage | Description |
+|-----------|----------|-------------|
+| FabricGateway | 78% | Main Fabric interface |
+| FabricNetwork | 95% | Network configuration |
+| FabricContract | 73% | Chaincode interface |
+
+### Zero Trust Validation Flow
+
+```mermaid
+flowchart TD
+    A[Incoming Request] --> B[Verify Signature]
+    B --> C{Valid?}
+    C -->|No| D[REJECT: SignatureError]
+    C -->|Yes| E[Check Permissions]
+    E --> F{Allowed?}
+    F -->|No| G[REJECT: PermissionDenied]
+    F -->|Yes| H[Verify Code Integrity]
+    H --> I{Code Valid?}
+    I -->|No| J[REJECT: CodeIntegrityError]
+    I -->|Yes| K[Check Rate Limit]
+    K --> L{Allowed?}
+    L -->|No| M[REJECT: RateLimitError]
+    L -->|Yes| N[Process Request]
+```
+
+### Security Features Summary
 
 | Feature | Description |
 |---------|-------------|
-| **Rate Limiting** | Token bucket algorithm for DoS protection |
-| **Retry Logic** | Exponential backoff with configurable attempts |
-| **Message TTL** | Automatic expiration with cleanup |
-| **Local Fallback** | Works without Fabric when blockchain unavailable |
-| **Configurable Settings** | YAML or environment variables |
+| **Code Integrity** | SHA-256 hash verification of source code |
+| **ECDSA Signatures** | Elliptic curve cryptography |
+| **Communication Permissions** | Fine-grained access control |
+| **Message Integrity** | Hash verification for transmissions |
+| **Certificate Caching** | LRU cache with TTL |
+| **Participant Revocation** | Immediate revocation capability |
 
-### Cryptographic Services
+### Cryptographic Algorithms
 
-| Service | Algorithm |
-|---------|-----------|
-| Hashing | SHA-256, SHA-384, SHA-512, BLAKE2 |
-| Signing | ECDSA with P-256 curve |
-| Fallback | HMAC-SHA256 (when private key unavailable) |
+| Service | Algorithm | Standard |
+|---------|-----------|---------|
+| Hashing | SHA-256, BLAKE2 | FIPS 180-4 |
+| Signing | ECDSA P-256 | FIPS 186-4 |
+| Certificates | X.509 | RFC 5280 |
+| Fallback | HMAC-SHA256 | FIPS 198-1 |
+
+### Test Reports
+
+| Report | Location | Description |
+|--------|----------|-------------|
+| **Integrity Matrix HTML** | `test/reports/` | Detailed validation report |
+| **Coverage HTML** | `htmlcov/index.html` | Line-by-line coverage |
+
+Run `python test/test_report_generator.py` to generate the integrity matrix report. |
 
 ---
 

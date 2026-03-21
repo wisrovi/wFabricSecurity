@@ -677,25 +677,21 @@ def run_library_tests_with_report():
     import coverage
 
     project_root = get_project_root()
-    test_file = project_root / "test" / "test_library.py"
+    test_dir = project_root / "test"
 
     print("🧪 Executing library tests...")
 
-    # Measure coverage
-    cov = coverage.Coverage()
+    cov = coverage.Coverage(source=["wFabricSecurity"])
     cov.start()
 
-    # Run pytest
     result = subprocess.run(
         [
             sys.executable,
             "-m",
             "pytest",
-            str(test_file),
+            str(test_dir),
             "-v",
             "--tb=short",
-            "--json-report",
-            f"--json-report-file={tempfile.gettempdir()}/pytest_report.json",
         ],
         cwd=project_root,
         capture_output=True,
