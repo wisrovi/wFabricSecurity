@@ -2,7 +2,7 @@
 
 **Unit tests for wFabricSecurity library**
 
-> **IMPORTANT**: View the complete Integrity Validation Matrix at **[../index.html](../index.html)** (or at https://wisrovi.github.io/wFabricSecurity/)
+> **View the complete Integrity Validation Matrix**: **[../index.html](../index.html)** or **[GitHub Pages](https://wisrovi.github.io/wFabricSecurity/)**
 
 ## Overview
 

@@ -209,3 +209,241 @@ class TestCoreModels:
             timestamp="now",
         )
         assert msg.is_expired() is False
+
+    def test_message_invalid_expires_at(self):
+        from wFabricSecurity.fabric_security.core.models import Message
+
+        msg = Message(
+            sender="A",
+            recipient="B",
+            content="test",
+            content_hash="h",
+            signature="s",
+            timestamp="now",
+            expires_at="not-a-date",
+        )
+        assert msg.is_expired() is False
+
+    def test_message_with_metadata(self):
+        from wFabricSecurity.fabric_security.core.models import Message, DataType
+
+        msg = Message(
+            sender="A",
+            recipient="B",
+            content="test",
+            content_hash="h",
+            signature="s",
+            timestamp="now",
+            metadata={"key": "value"},
+        )
+        assert msg.metadata == {"key": "value"}
+
+    def test_message_to_dict_with_metadata(self):
+        from wFabricSecurity.fabric_security.core.models import Message
+
+        msg = Message(
+            sender="A",
+            recipient="B",
+            content="test",
+            content_hash="h",
+            signature="s",
+            timestamp="now",
+            metadata={"key": "value"},
+        )
+        data = msg.to_dict()
+        assert data["metadata"] == {"key": "value"}
+
+    def test_participant_creation(self):
+        from wFabricSecurity.fabric_security.core.models import Participant
+        from wFabricSecurity import CommunicationDirection, ParticipantStatus
+
+        p = Participant(
+            identity="CN=Test",
+            code_hash="hash123",
+            version="2.0.0",
+            direction=CommunicationDirection.OUTBOUND,
+            status=ParticipantStatus.ACTIVE,
+        )
+        assert p.identity == "CN=Test"
+        assert p.version == "2.0.0"
+
+    def test_participant_to_dict(self):
+        from wFabricSecurity.fabric_security.core.models import Participant
+
+        p = Participant(identity="CN=Test", code_hash="hash")
+        data = p.to_dict()
+        assert data["identity"] == "CN=Test"
+        assert data["is_active"] is True
+
+    def test_participant_from_dict(self):
+        from wFabricSecurity.fabric_security.core.models import Participant
+
+        data = {
+            "identity": "CN=Test",
+            "code_hash": "hash123",
+            "version": "1.0.0",
+            "allowed_communications": ["CN=A"],
+        }
+        p = Participant.from_dict(data)
+        assert p.identity == "CN=Test"
+        assert p.version == "1.0.0"
+
+    def test_participant_is_revoked(self):
+        from wFabricSecurity.fabric_security.core.models import Participant
+        from wFabricSecurity import ParticipantStatus
+
+        p = Participant(
+            identity="CN=Test",
+            code_hash="hash",
+            status=ParticipantStatus.REVOKED,
+        )
+        assert p.is_revoked() is True
+
+    def test_participant_is_not_revoked(self):
+        from wFabricSecurity.fabric_security.core.models import Participant
+        from wFabricSecurity import ParticipantStatus
+
+        p = Participant(
+            identity="CN=Test",
+            code_hash="hash",
+            status=ParticipantStatus.ACTIVE,
+        )
+        assert p.is_revoked() is False
+
+    def test_participant_can_communicate_bidirectional(self):
+        from wFabricSecurity.fabric_security.core.models import Participant
+        from wFabricSecurity import CommunicationDirection
+
+        p = Participant(
+            identity="CN=A",
+            code_hash="hash",
+            direction=CommunicationDirection.BIDIRECTIONAL,
+        )
+        assert p.can_communicate_with("CN=B") is True
+
+    def test_participant_can_communicate_outbound_allowed(self):
+        from wFabricSecurity.fabric_security.core.models import Participant
+        from wFabricSecurity import CommunicationDirection
+
+        p = Participant(
+            identity="CN=A",
+            code_hash="hash",
+            direction=CommunicationDirection.OUTBOUND,
+            allowed_communications=["CN=B"],
+        )
+        assert p.can_communicate_with("CN=B") is True
+
+    def test_participant_cannot_communicate_outbound_not_allowed(self):
+        from wFabricSecurity.fabric_security.core.models import Participant
+        from wFabricSecurity import CommunicationDirection
+
+        p = Participant(
+            identity="CN=A",
+            code_hash="hash",
+            direction=CommunicationDirection.OUTBOUND,
+            allowed_communications=["CN=C"],
+        )
+        assert p.can_communicate_with("CN=B") is False
+
+    def test_participant_cannot_communicate_inactive(self):
+        from wFabricSecurity.fabric_security.core.models import Participant
+
+        p = Participant(
+            identity="CN=A",
+            code_hash="hash",
+            is_active=False,
+        )
+        assert p.can_communicate_with("CN=B") is False
+
+    def test_participant_cannot_communicate_revoked(self):
+        from wFabricSecurity.fabric_security.core.models import Participant
+        from wFabricSecurity import ParticipantStatus
+
+        p = Participant(
+            identity="CN=A",
+            code_hash="hash",
+            status=ParticipantStatus.REVOKED,
+        )
+        assert p.can_communicate_with("CN=B") is False
+
+    def test_task_creation(self):
+        from wFabricSecurity.fabric_security.core.models import Task
+        from wFabricSecurity import TaskStatus
+
+        t = Task(
+            task_id="task1",
+            hash_a="hash_a",
+            hash_b="hash_b",
+            master_id="CN=Master",
+            slave_id="CN=Slave",
+            status=TaskStatus.COMPLETED,
+        )
+        assert t.task_id == "task1"
+        assert t.master_id == "CN=Master"
+
+    def test_task_to_dict(self):
+        from wFabricSecurity.fabric_security.core.models import Task
+
+        t = Task(task_id="task1", hash_a="hash")
+        data = t.to_dict()
+        assert data["task_id"] == "task1"
+        assert data["status"] == "pending"
+
+    def test_task_from_dict(self):
+        from wFabricSecurity.fabric_security.core.models import Task
+
+        data = {
+            "task_id": "task1",
+            "hash_a": "hash_a",
+            "master_id": "CN=Master",
+            "slave_id": "CN=Slave",
+            "status": "completed",
+        }
+        t = Task.from_dict(data)
+        assert t.task_id == "task1"
+        assert t.master_id == "CN=Master"
+
+    def test_task_is_complete(self):
+        from wFabricSecurity.fabric_security.core.models import Task
+        from wFabricSecurity import TaskStatus
+
+        t = Task(
+            task_id="task1",
+            hash_a="hash_a",
+            hash_b="hash_b",
+            status=TaskStatus.COMPLETED,
+        )
+        assert t.is_complete() is True
+
+    def test_task_not_complete_pending(self):
+        from wFabricSecurity.fabric_security.core.models import Task
+        from wFabricSecurity import TaskStatus
+
+        t = Task(
+            task_id="task1",
+            hash_a="hash_a",
+            status=TaskStatus.PENDING,
+        )
+        assert t.is_complete() is False
+
+    def test_task_not_complete_no_hash_b(self):
+        from wFabricSecurity.fabric_security.core.models import Task
+        from wFabricSecurity import TaskStatus
+
+        t = Task(
+            task_id="task1",
+            hash_a="hash_a",
+            status=TaskStatus.COMPLETED,
+            hash_b=None,
+        )
+        assert t.is_complete() is False
+
+    def test_task_with_metadata(self):
+        from wFabricSecurity.fabric_security.core.models import Task
+
+        t = Task(
+            task_id="task1",
+            hash_a="hash",
+            metadata={"priority": "high"},
+        )
+        assert t.metadata == {"priority": "high"}

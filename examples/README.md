@@ -2,7 +2,7 @@
 
 **Functional examples demonstrating wFabricSecurity usage**
 
-> **IMPORTANT**: View the complete Integrity Validation Matrix at **[../index.html](../index.html)** (or at https://wisrovi.github.io/wFabricSecurity/)
+> **Integrity Validation Matrix**: View at **[../index.html](../index.html)** or **[GitHub Pages](https://wisrovi.github.io/wFabricSecurity/)**
 
 ## Overview
 

@@ -7,13 +7,46 @@
 ![Tests](https://img.shields.io/badge/Tests-203%20passed-brightgreen.svg)
 ![Coverage](https://img.shields.io/badge/Coverage-69%25-yellow.svg)
 
-> **IMPORTANT**: View the complete Integrity Validation Matrix at **[index.html](index.html)** (GitHub Pages: https://wisrovi.github.io/wFabricSecurity/)
-
 A comprehensive distributed cryptographic security library providing identity verification, code integrity validation, communication permissions, message integrity, rate limiting, retry mechanisms, and immutable audit trails on Hyperledger Fabric blockchain.
 
 ---
 
-## Project Overview
+## 🎯 Quick Navigation
+
+| Document | Purpose |
+|----------|---------|
+| **[index.html](index.html)** | Visual presentation of the project, installation guide, features overview, and Integrity Validation Matrix (best viewed at [GitHub Pages](https://wisrovi.github.io/wFabricSecurity/)) |
+| **This README.md** | Complete technical documentation, architecture, API reference, usage examples, and contribution guidelines |
+
+---
+
+## 📖 About index.html
+
+**Why does this project have an index.html file?**
+
+This project has **two complementary documentation files** that serve different purposes:
+
+| Aspect | `index.html` (GitHub Pages) | `README.md` |
+|--------|------------------------------|-------------|
+| **Purpose** | Visual presentation card | Technical documentation |
+| **Format** | Beautiful HTML with CSS | Markdown text |
+| **Best for** | Quick overview, installation, visual test matrix | Deep technical reference, architecture, API |
+| **Installation** | `pip install wFabricSecurity` | Clone, read, contribute |
+| **GitHub Pages** | https://wisrovi.github.io/wFabricSecurity/ | https://github.com/wisrovi/wFabricSecurity |
+
+> **Why both?** 
+> - `index.html` is the **presentation card** - what you see first when you install the library with `pip install wFabricSecurity` and visit the GitHub Pages
+> - `README.md` is the **technical bible** - contains architecture diagrams, complete API reference, troubleshooting, and contribution guidelines
+> - Both are **equally important** - index.html attracts, README.md educates
+
+**In 6 months or 2 years**, when you come back to this project:
+- Start with **index.html** to quickly remember what this project does and how to install it
+- Use **README.md** for deep technical understanding, architecture decisions, and contribution guidelines
+- The **test matrix in index.html** shows at a glance what functionalities are covered
+
+---
+
+## 🚀 Quick Start
 
 **wFabricSecurity** implements a **Zero Trust** security model where no participant is automatically trusted. Every transaction must be cryptographically verified before processing. The system leverages Hyperledger Fabric's immutable ledger to store code hashes, participant registrations, and audit trails.
 
@@ -1327,9 +1360,12 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## Credits
 
-- **Author**: wisrovi
+- **Author**: William Rodriguez
+  - [GitHub](https://github.com/wisrovi)
+  - [LinkedIn](https://www.linkedin.com/in/wisrovi-rodriguez/)
 - **Repository**: [github.com/wisrovi/wFabricSecurity](https://github.com/wisrovi/wFabricSecurity)
-- **Documentation**: This file serves as the primary documentation
+- **GitHub Pages**: [wisrovi.github.io/wFabricSecurity](https://wisrovi.github.io/wFabricSecurity/) (Visual presentation with index.html)
+- **Documentation**: This README.md serves as the primary technical documentation
 
 ---
 
@@ -1340,4 +1376,14 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-*This README was automatically generated and reflects the current state of the codebase.*
+## 📚 Related Documentation
+
+| Document | URL | Description |
+|----------|-----|-------------|
+| Visual Presentation | [GitHub Pages](https://wisrovi.github.io/wFabricSecurity/) | index.html with installation, features, and test matrix |
+| Technical Docs | This README.md | Complete API reference, architecture, troubleshooting |
+| Source Code | [GitHub Repository](https://github.com/wisrovi/wFabricSecurity) | Latest code, issues, pull requests |
+
+---
+
+*This README documents the technical aspects. For a visual overview and quick installation guide, see [index.html](index.html) or [GitHub Pages](https://wisrovi.github.io/wFabricSecurity/).*

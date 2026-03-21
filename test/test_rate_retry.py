@@ -176,3 +176,96 @@ class TestRetryLogic:
 
         assert ctx.attempt == 1
         assert ctx.last_exception is not None
+
+
+class TestRateLimiterCoverage:
+    """Additional tests for RateLimiter to increase coverage."""
+
+    def test_acquire_multiple_tokens(self):
+        from wFabricSecurity.fabric_security.security.rate_limiter import RateLimiter
+
+        limiter = RateLimiter(requests_per_second=100, burst=10)
+        result = limiter.acquire(tokens=5, blocking=False)
+        assert result is True
+
+    def test_acquire_with_timeout_insufficient_tokens(self):
+        from wFabricSecurity.fabric_security.security.rate_limiter import RateLimiter
+
+        limiter = RateLimiter(requests_per_second=1, burst=1)
+        limiter.acquire(tokens=1, blocking=False)
+        result = limiter.acquire(tokens=1, blocking=True, timeout=0.01)
+        assert result is False
+
+    def test_get_recent_requests(self):
+        from wFabricSecurity.fabric_security.security.rate_limiter import RateLimiter
+
+        limiter = RateLimiter(requests_per_second=100, burst=10)
+        limiter.acquire(tokens=3, blocking=False)
+        recent = limiter.get_recent_requests(1.0)
+        assert recent >= 0
+
+    def test_is_over_limit(self):
+        from wFabricSecurity.fabric_security.security.rate_limiter import RateLimiter
+
+        limiter = RateLimiter(requests_per_second=10, burst=5)
+        limiter.acquire(tokens=3, blocking=False)
+        is_over = limiter.is_over_limit()
+        assert isinstance(is_over, bool)
+
+    def test_block_for(self):
+        from wFabricSecurity.fabric_security.security.rate_limiter import RateLimiter
+
+        limiter = RateLimiter(requests_per_second=100, burst=10)
+        limiter.block_for(0.5)
+        assert limiter.try_acquire() is False
+
+    def test_unblock(self):
+        from wFabricSecurity.fabric_security.security.rate_limiter import RateLimiter
+
+        limiter = RateLimiter(requests_per_second=100, burst=10)
+        limiter.block_for(0.1)
+        time.sleep(0.2)
+        limiter.unblock()
+        result = limiter.try_acquire()
+        assert result is True
+
+    def test_is_blocked_property(self):
+        from wFabricSecurity.fabric_security.security.rate_limiter import RateLimiter
+
+        limiter = RateLimiter(requests_per_second=100, burst=10)
+        assert limiter.is_blocked is False
+        limiter.block_for(0.1)
+        assert limiter.is_blocked is True
+
+    def test_get_stats_includes_blocked_until(self):
+        from wFabricSecurity.fabric_security.security.rate_limiter import RateLimiter
+
+        limiter = RateLimiter(requests_per_second=100, burst=10)
+        limiter.block_for(1.0)
+        stats = limiter.get_stats()
+        assert "blocked_until" in stats
+
+    def test_acquire_0_tokens(self):
+        from wFabricSecurity.fabric_security.security.rate_limiter import RateLimiter
+
+        limiter = RateLimiter(requests_per_second=100, burst=10)
+        result = limiter.acquire(tokens=0, blocking=False)
+        assert result is True
+
+    def test_reset_clears_tokens(self):
+        from wFabricSecurity.fabric_security.security.rate_limiter import RateLimiter
+
+        limiter = RateLimiter(requests_per_second=100, burst=5)
+        limiter.acquire(tokens=3, blocking=False)
+        limiter.reset()
+        tokens = limiter.get_available_tokens()
+        assert tokens == 5.0
+
+    def test_rate_limit_exceeded_error(self):
+        from wFabricSecurity.fabric_security.security.rate_limiter import RateLimiter
+        from wFabricSecurity.fabric_security.core.exceptions import RateLimitError
+
+        limiter = RateLimiter(requests_per_second=100, burst=2)
+        limiter.acquire(tokens=2, blocking=False)
+        with pytest.raises(RateLimitError):
+            limiter.acquire(tokens=1, blocking=False)

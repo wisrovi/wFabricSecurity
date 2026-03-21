@@ -378,16 +378,212 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        .header, .integrity-section, .progress-section, .stat-card, .matrix-section {
+        .header, .integrity-section, .progress-section, .stat-card, .matrix-section, .presentation-section {
             animation: fadeIn 0.6s ease-out;
         }
+
+        .presentation-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .presentation-section h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .presentation-section p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .install-command {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #00ff88;
+            padding: 20px 30px;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.3em;
+            margin: 20px 0;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid var(--primary);
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-card h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.95em;
+            margin: 0;
+        }
+
+        .readme-link {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-top: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .readme-link:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .author-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .author-section h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .author-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .author-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 30px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .author-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .author-link.project { border-left: 4px solid var(--primary); }
+        .author-link.github { border-left: 4px solid #333; }
+        .author-link.linkedin { border-left: 4px solid #0077b5; }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Project Presentation -->
+        <div class="presentation-section">
+            <h2>🛡️ wFabricSecurity</h2>
+            <p>
+                <strong>Zero Trust Security System for Hyperledger Fabric</strong>
+            </p>
+            <p>
+                A comprehensive distributed cryptographic security library that provides identity verification, 
+                code integrity validation, communication permissions, message integrity, rate limiting, 
+                retry mechanisms, and immutable audit trails on Hyperledger Fabric blockchain.
+            </p>
+            <p>
+                In a <strong>Zero Trust</strong> architecture, no participant is automatically trusted. 
+                Every transaction must be cryptographically verified before processing. The system leverages 
+                Hyperledger Fabric's immutable ledger to store code hashes, participant registrations, and audit trails.
+            </p>
+            
+            <div class="install-command">
+                pip install wFabricSecurity
+            </div>
+            
+            <h3 style="color: var(--primary); margin: 30px 0 20px;">✨ Key Features</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🔐 Code Integrity</h4>
+                    <p>SHA-256 hash verification of source code to detect tampering. Each code version has a unique fingerprint registered in Fabric.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔑 Digital Signatures</h4>
+                    <p>ECDSA P-256 cryptographic signatures for message authentication. Non-repudiation with X.509 certificates.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🛡️ Access Control</h4>
+                    <p>Zero Trust communication permissions defining who can communicate with whom. Explicit permission verification.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📝 Message Integrity</h4>
+                    <p>Hash verification for transmission integrity. Messages with TTL support and automatic expiration.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>⚡ Rate Limiting</h4>
+                    <p>Token bucket algorithm for DoS protection. Configurable requests per second and burst handling.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔄 Retry Logic</h4>
+                    <p>Exponential backoff ensures reliable communication with transient failures. Decorator and context manager.</p>
+                </div>
+            </div>
+            
+            <h3 style="color: var(--primary); margin: 30px 0 20px;">🚀 Why Use wFabricSecurity?</h3>
+            <p>
+                <strong>Never Trust, Always Verify</strong> - Every request must be authenticated and authorized.
+            </p>
+            <p>
+                <strong>Least Privilege</strong> - Participants only have permissions they explicitly need.
+            </p>
+            <p>
+                <strong>Assume Breach</strong> - All communications are encrypted and verified.
+            </p>
+            <p>
+                <strong>Immutable Audit Trail</strong> - All transactions recorded on Hyperledger Fabric blockchain.
+            </p>
+            
+            <a href="https://github.com/wisrovi/wFabricSecurity" class="readme-link" target="_blank">
+                📖 View Complete Documentation (README.md)
+            </a>
+        </div>
+
         <!-- Header -->
         <div class="header">
-            <h1>🛡️ wFabricSecurity - Library Test Report</h1>
+            <h1>📊 Test Report & Integrity Validation Matrix</h1>
             <div class="subtitle">Complete Unit Test Suite - 203 Tests</div>
             <div class="meta">
                 <span>📅 2026-03-21</span>
@@ -1474,6 +1670,35 @@
 
                 </div>
             </div>
+        </div>
+
+        <!-- Author Section -->
+        <div class="author-section">
+            <h3>👨‍💻 Author</h3>
+            <p style="font-size: 1.2em; color: var(--text-primary);">
+                <strong>William Rodriguez</strong>
+            </p>
+            <div class="author-links">
+                <a href="https://github.com/wisrovi/wFabricSecurity" class="author-link project" target="_blank">
+                    📦 Project Repository
+                </a>
+                <a href="https://github.com/wisrovi" class="author-link github" target="_blank">
+                    🐙 GitHub Profile
+                </a>
+                <a href="https://www.linkedin.com/in/wisrovi-rodriguez/" class="author-link linkedin" target="_blank">
+                    💼 LinkedIn
+                </a>
+            </div>
+        </div>
+
+        <!-- Link to README -->
+        <div style="text-align: center; padding: 30px; background: var(--card-bg); border-radius: 20px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+            <p style="color: var(--text-secondary); font-size: 1.1em; margin-bottom: 15px;">
+                For complete documentation, architecture diagrams, usage examples, and API reference:
+            </p>
+            <a href="https://github.com/wisrovi/wFabricSecurity/blob/main/README.md" class="readme-link" target="_blank">
+                📖 View README.md
+            </a>
         </div>
 
         <div class="footer">
