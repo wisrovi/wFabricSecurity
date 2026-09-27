@@ -1,11 +1,15 @@
+<p align="center">
+  <a href="https://pypi.org/project/wFabricSecurity/"><img src="https://img.shields.io/pypi/v/wFabricSecurity?style=for-the-badge&logo=pypi&color=3b82f6" alt="PyPI version" /></a>
+  <a href="https://linkedin.com/in/wisrovi-rodriguez"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
+  <a href="https://wisrovi.dev"><img src="https://img.shields.io/badge/Author-wisrovi.dev-111827?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Portal" /></a>
+  <a href="https://orcid.org/0009-0005-0710-1861"><img src="https://img.shields.io/badge/ORCID-0009--0005--0710--1861-A6CE39?style=for-the-badge&logo=orcid&logoColor=white" alt="ORCID" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License" /></a>
+  <a href="https://wFabricSecurity.readthedocs.io/en/latest/"><img src="https://img.shields.io/readthedocs/wfabricsecurity/latest?style=for-the-badge" alt="Documentation" /></a>
+</p>
+
 # wFabricSecurity
 
 **Zero Trust Security System for Hyperledger Fabric**
-
-[![Python Version](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![PyPI Version](https://img.shields.io/pypi/v/wFabricSecurity.svg)](https://pypi.org/project/wFabricSecurity/)
-[![Documentation](https://img.shields.io/readthedocs/wfabricsecurity/latest?style=flat)](https://wFabricSecurity.readthedocs.io/en/latest/)
 
 ---
 
@@ -207,12 +211,16 @@ See [LICENSE](LICENSE) for details.
 
 ---
 
-## Author
+## Author & Research Affiliation
 
-**William Rodriguez**
-- GitHub: [github.com/wisrovi](https://github.com/wisrovi)
-- LinkedIn: [linkedin.com/in/wisrovi-rodriguez](https://es.linkedin.com/in/wisrovi-rodriguez)
-- Email: william.rodriguez@ecapturedtech.com
+* **William Steve Rodriguez Villamizar (Wisrovi)**
+* **Role:** Principal AI Engineer & Applied AI Solutions Architect | Scientific Researcher
+* 🌐 **Official Portal:** [wisrovi.dev](https://wisrovi.dev)
+* 💼 **LinkedIn:** [wisrovi-rodriguez](https://www.linkedin.com/in/wisrovi-rodriguez/)
+* 🆔 **ORCID:** [0009-0005-0710-1861](https://orcid.org/0009-0005-0710-1861)
+* 📦 **PyPI:** [pypi.org/user/wisrovi/](https://pypi.org/user/wisrovi/)
+* 🐙 **GitHub:** [@wisrovi](https://github.com/wisrovi)
+* 📧 **Email:** wisrovi@wisrovi.dev
 
 ---
 
