@@ -220,7 +220,7 @@ See [LICENSE](LICENSE) for details.
 * 🆔 **ORCID:** [0009-0005-0710-1861](https://orcid.org/0009-0005-0710-1861)
 * 📦 **PyPI:** [pypi.org/user/wisrovi/](https://pypi.org/user/wisrovi/)
 * 🐙 **GitHub:** [@wisrovi](https://github.com/wisrovi)
-* 📧 **Email:** wisrovi@wisrovi.dev
+* 📧 **Email:** wisrovi.rodriguez@gmail.com
 
 ---
 
